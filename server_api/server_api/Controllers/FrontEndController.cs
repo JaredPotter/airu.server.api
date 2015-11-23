@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
@@ -28,19 +30,41 @@ namespace server_api.Controllers
         }
 
         // GET api/values/5
-        public string Get(int id)
+        public HttpResponseMessage Get(int id)
         {
-            return data[id];
+            if(data.Count > id)
+            {
+                return Request.CreateResponse<string>(HttpStatusCode.OK, data[id]);
+            }
+            else
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found");
+            }
         }
 
         // POST api/values
-        public void Post([FromBody]FrontEndDataSet[] dataSet)
+        public HttpResponseMessage Post([FromBody]FrontEndDataSet dataSet)
         {
-            foreach (var item in dataSet)
-            {
-                data.Add(item.firstName + item.lastName);
-            }
+
+            data.Add(dataSet.firstName + dataSet.lastName);
+
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+            message.Headers.Location = new Uri(Request.RequestUri + data.Count.ToString());
+            return message;
         }
+
+        //public HttpResponseMessage Post([FromBody]FrontEndDataSet[] dataSet)
+        //{
+
+        //    foreach (var item in dataSet)
+        //    {
+        //        data.Add(item.firstName + item.lastName);
+        //    }
+
+        //    var message = Request.CreateResponse(HttpStatusCode.OK);
+        //    message.Headers.Location = new Uri(Request.RequestUri + data.Count.ToString());
+        //    return message;
+        //}
 
         // PUT api/values/5
         public void Put(int id, [FromBody]string value)

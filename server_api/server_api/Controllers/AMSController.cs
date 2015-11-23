@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
@@ -28,18 +31,29 @@ namespace server_api.Controllers
         }
 
         // GET api/values/5
-        public string Get(int id)
+        public HttpResponseMessage Get(int id)
         {
-            return data[id];
+            if (data.Count > id)
+            {
+                return Request.CreateResponse<string>(HttpStatusCode.OK, data[id]);
+            }
+            else
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found");
+            }
         }
 
         // POST api/values
-        public void Post([FromBody]AMSDataSet[] dataSet)
+        public HttpResponseMessage Post([FromBody]AMSDataSet dataSet)
         {
-            foreach(var item in dataSet)
-            {
-                data.Add(item.firstName + item.lastName);
-            }
+
+            data.Add(dataSet.MAC);
+
+            string json = JsonConvert.SerializeObject(dataSet);
+            Console.WriteLine(json);
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+            message.Content = new StringContent(json);
+            return message;
         }
 
         // PUT api/values/5
@@ -57,7 +71,39 @@ namespace server_api.Controllers
 
     public class AMSDataSet
     {
-        public string firstName {get; set;}
-        public string lastName {get; set;}
+        
+        public Pressure[] Pressure { get; set; }
+        public string MAC { get; set; }
+        public Temperature[] Temperature { get; set; }
+        public Altitude[] Altitude { get; set; }
+        public Humidity[] Humidity { get; set; }
+    }
+
+    public class Temperature
+    {
+        public string date { get; set; }
+        public string unit { get; set; }
+        public string value { get; set; }
+    }
+
+    public class Pressure
+    {
+        public string date { get; set; }
+        public string unit { get; set; }
+        public string value { get; set; }
+    }
+
+    public class Altitude
+    {
+        public string date { get; set; }
+        public string unit { get; set; }
+        public string value { get; set; }
+    }
+
+    public class Humidity
+    {
+        public string date { get; set; }
+        public string unit { get; set; }
+        public string value { get; set; }
     }
 }
