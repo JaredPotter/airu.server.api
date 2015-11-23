@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Web;
 using System.Web.Http;
+using System.Web.Mvc;
 
 namespace server_api.Controllers
 {
-    public class ValuesController : ApiController
+    public class AMSController : ApiController
     {
         static List<string> data = initList();
 
@@ -34,9 +34,12 @@ namespace server_api.Controllers
         }
 
         // POST api/values
-        public void Post([FromBody]string value)
+        public void Post([FromBody]AMSDataSet[] dataSet)
         {
-            data.Add(value);
+            foreach(var item in dataSet)
+            {
+                data.Add(item.firstName + item.lastName);
+            }
         }
 
         // PUT api/values/5
@@ -50,5 +53,11 @@ namespace server_api.Controllers
         {
             data.RemoveAt(id);
         }
+    }
+
+    public class AMSDataSet
+    {
+        public string firstName {get; set;}
+        public string lastName {get; set;}
     }
 }
