@@ -44,12 +44,25 @@ namespace server_api.Controllers
         }
 
         // POST api/values
-        public HttpResponseMessage Post([FromBody]AMSDataSet dataSet)
+        //public HttpResponseMessage Post([FromBody]AMSDataSet dataSet)
+        //{
+
+        //    data.Add(dataSet.MAC);
+
+        //    string json = JsonConvert.SerializeObject(dataSet);
+        //    Console.WriteLine(json);
+        //    var message = Request.CreateResponse(HttpStatusCode.OK);
+        //    message.Content = new StringContent(json);
+        //    return message;
+        //}
+
+        // POST api/values
+        public HttpResponseMessage Post([FromBody]AMSState state)
         {
 
-            data.Add(dataSet.MAC);
+            data.Add(state.MAC);
 
-            string json = JsonConvert.SerializeObject(dataSet);
+            string json = JsonConvert.SerializeObject(state);
             Console.WriteLine(json);
             var message = Request.CreateResponse(HttpStatusCode.OK);
             message.Content = new StringContent(json);
@@ -77,6 +90,19 @@ namespace server_api.Controllers
         public Temperature[] Temperature { get; set; }
         public Altitude[] Altitude { get; set; }
         public Humidity[] Humidity { get; set; }
+    }
+
+    public class AMSState
+    {
+        public string MAC { get; set; }
+        public State[] State { get; set; }
+    }
+
+    public class State
+    {
+        public string latitude { get; set; }
+        public string date { get; set; }
+        public string longitude { get; set; }
     }
 
     public class Temperature
