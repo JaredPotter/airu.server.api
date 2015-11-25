@@ -6,50 +6,37 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-using System.Web.Mvc;
 
 namespace server_api.Controllers
 {
     public class AMSController : ApiController
     {
-        static List<string> data = initList();
 
-        private static List<string> initList()
+        [Route("api/ams")]
+        [HttpGet]
+        public IEnumerable<string> AMSGet()
         {
-            var ret = new List<string>();
-            ret.Add("Taylor Wilson");
-            ret.Add("Zach Lobato");
-            ret.Add("Jared Moore");
-            ret.Add("Jared Potter");
-            return ret;
+            return null;
         }
 
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return data;
-        }
-
-        // GET api/values/5
+        [Route("api/ams/{id}")]
+        [HttpGet]
         public HttpResponseMessage Get(int id)
         {
             var db = new AirU_Database_Entity();
 
-            if (data.Count > id)
-            {
-                return Request.CreateResponse<string>(HttpStatusCode.OK, data[id]);
-            }
-            else
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found");
-            }
+    
+            //return Request.CreateResponse<string>(HttpStatusCode.OK);
+
+            return null;
+            //return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found");
+           
         }
 
         // POST api/values
         //public HttpResponseMessage Post([FromBody]AMSDataSet dataSet)
         //{
 
-        //    data.Add(dataSet.MAC);
 
         //    string json = JsonConvert.SerializeObject(dataSet);
         //    Console.WriteLine(json);
@@ -61,9 +48,6 @@ namespace server_api.Controllers
         // POST api/values
         public HttpResponseMessage Post([FromBody]AMSState state)
         {
-
-            data.Add(state.MAC);
-
             string json = JsonConvert.SerializeObject(state);
             Console.WriteLine(json);
             var message = Request.CreateResponse(HttpStatusCode.OK);
@@ -74,13 +58,13 @@ namespace server_api.Controllers
         // PUT api/values/5
         public void Put(int id, [FromBody]string value)
         {
-            data[id] = value;
+        
         }
 
         // DELETE api/values/5
         public void Delete(int id)
         {
-            data.RemoveAt(id);
+    
         }
     }
 
