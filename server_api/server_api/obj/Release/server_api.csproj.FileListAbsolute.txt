@@ -63,3 +63,5 @@ C:\GitLab\airu.server.api\server_api\server_api\bin\zh-Hant\System.Spatial.resou
 C:\GitLab\airu.server.api\server_api\server_api\obj\Release\server_api.csprojResolveAssemblyReference.cache
 C:\GitLab\airu.server.api\server_api\server_api\obj\Release\server_api.dll
 C:\GitLab\airu.server.api\server_api\server_api\obj\Release\server_api.pdb
+C:\gitlab\airu.server.api\server_api\server_api\bin\EntityFramework.SqlServer.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\EntityFramework.SqlServer.xml

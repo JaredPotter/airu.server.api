@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="AirU_Database_NamespaceStoreContainer" CdmEntityContainer="AirU_Database_Entity">
+    <EntitySetMapping Name="DataPoints">
+      <EntityTypeMapping TypeName="AirU_Database_Namespace.DataPoint">
+        <MappingFragment StoreEntitySet="DataPoints">
+          <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+          <ScalarProperty Name="MeasurementTime" ColumnName="MeasurementTime" />
+          <ScalarProperty Name="Value" ColumnName="Value" />
+          <ScalarProperty Name="PollutantName" ColumnName="PollutantName" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="DeviceGroups">
+      <EntityTypeMapping TypeName="AirU_Database_Namespace.DeviceGroup">
+        <MappingFragment StoreEntitySet="DeviceGroups">
+          <ScalarProperty Name="GroupName" ColumnName="GroupName" />
+          <ScalarProperty Name="Email" ColumnName="Email" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Devices">
+      <EntityTypeMapping TypeName="AirU_Database_Namespace.Device">
+        <MappingFragment StoreEntitySet="Devices">
+          <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+          <ScalarProperty Name="Email" ColumnName="Email" />
+          <ScalarProperty Name="DevicePrivacy" ColumnName="DevicePrivacy" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="DeviceStates">
+      <EntityTypeMapping TypeName="AirU_Database_Namespace.DeviceState">
+        <MappingFragment StoreEntitySet="DeviceStates">
+          <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+          <ScalarProperty Name="StateTime" ColumnName="StateTime" />
+          <ScalarProperty Name="Lat" ColumnName="Lat" />
+          <ScalarProperty Name="Long" ColumnName="Long" />
+          <ScalarProperty Name="InOrOut" ColumnName="InOrOut" />
+          <ScalarProperty Name="StatePrivacy" ColumnName="StatePrivacy" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Pollutants">
+      <EntityTypeMapping TypeName="AirU_Database_Namespace.Pollutant">
+        <MappingFragment StoreEntitySet="Pollutants">
+          <ScalarProperty Name="PollutantName" ColumnName="PollutantName" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Users">
+      <EntityTypeMapping TypeName="AirU_Database_Namespace.User">
+        <MappingFragment StoreEntitySet="Users">
+          <ScalarProperty Name="Email" ColumnName="Email" />
+          <ScalarProperty Name="Pass" ColumnName="Pass" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <AssociationSetMapping Name="DevicesAndGroups" TypeName="AirU_Database_Namespace.DevicesAndGroups" StoreEntitySet="DevicesAndGroups">
+      <EndProperty Name="Devices">
+        <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+      </EndProperty>
+      <EndProperty Name="DeviceGroups">
+        <ScalarProperty Name="GroupName" ColumnName="GroupName" />
+        <ScalarProperty Name="Email" ColumnName="g_Email" />
+      </EndProperty>
+    </AssociationSetMapping>
+  </EntityContainerMapping>
+</Mapping>

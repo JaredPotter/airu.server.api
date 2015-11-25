@@ -33,6 +33,8 @@ namespace server_api.Controllers
         // GET api/values/5
         public HttpResponseMessage Get(int id)
         {
+            var db = new AirU_Database_Entity();
+
             if (data.Count > id)
             {
                 return Request.CreateResponse<string>(HttpStatusCode.OK, data[id]);

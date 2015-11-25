@@ -1,0 +1,450 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="AirU_Database_Namespace.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2005" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="DataPoints">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+            <PropertyRef Name="MeasurementTime" />
+            <PropertyRef Name="PollutantName" />
+          </Key>
+          <Property Name="DeviceID" Type="varchar" MaxLength="17" Nullable="false" />
+          <Property Name="MeasurementTime" Type="datetime" Nullable="false" />
+          <Property Name="Value" Type="float" Nullable="false" />
+          <Property Name="PollutantName" Type="varchar" MaxLength="30" Nullable="false" />
+        </EntityType>
+        <EntityType Name="DeviceGroups">
+          <Key>
+            <PropertyRef Name="GroupName" />
+            <PropertyRef Name="Email" />
+          </Key>
+          <Property Name="GroupName" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="Email" Type="varchar" MaxLength="320" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Devices">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+          </Key>
+          <Property Name="DeviceID" Type="varchar" MaxLength="17" Nullable="false" />
+          <Property Name="Email" Type="varchar" MaxLength="320" Nullable="false" />
+          <Property Name="DevicePrivacy" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="DevicesAndGroups">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+            <PropertyRef Name="GroupName" />
+            <PropertyRef Name="g_Email" />
+          </Key>
+          <Property Name="DeviceID" Type="varchar" MaxLength="17" Nullable="false" />
+          <Property Name="GroupName" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="g_Email" Type="varchar" MaxLength="320" Nullable="false" />
+        </EntityType>
+        <EntityType Name="DeviceStates">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+            <PropertyRef Name="StateTime" />
+          </Key>
+          <Property Name="DeviceID" Type="varchar" MaxLength="17" Nullable="false" />
+          <Property Name="StateTime" Type="datetime" Nullable="false" />
+          <Property Name="Lat" Type="decimal" Precision="9" Scale="6" Nullable="false" />
+          <Property Name="Long" Type="decimal" Precision="9" Scale="6" Nullable="false" />
+          <Property Name="InOrOut" Type="bit" Nullable="false" />
+          <Property Name="StatePrivacy" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Pollutants">
+          <Key>
+            <PropertyRef Name="PollutantName" />
+          </Key>
+          <Property Name="PollutantName" Type="varchar" MaxLength="30" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Users">
+          <Key>
+            <PropertyRef Name="Email" />
+          </Key>
+          <Property Name="Email" Type="varchar" MaxLength="320" Nullable="false" />
+          <Property Name="Pass" Type="varchar" MaxLength="20" Nullable="false" />
+        </EntityType>
+        <Association Name="FK__DataPoint__Devic__5070F446">
+          <End Role="Devices" Type="Self.Devices" Multiplicity="1" />
+          <End Role="DataPoints" Type="Self.DataPoints" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Devices">
+              <PropertyRef Name="DeviceID" />
+            </Principal>
+            <Dependent Role="DataPoints">
+              <PropertyRef Name="DeviceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DataPoint__Pollu__5165187F">
+          <End Role="Pollutants" Type="Self.Pollutants" Multiplicity="1" />
+          <End Role="DataPoints" Type="Self.DataPoints" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Pollutants">
+              <PropertyRef Name="PollutantName" />
+            </Principal>
+            <Dependent Role="DataPoints">
+              <PropertyRef Name="PollutantName" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DeviceGro__Email__44FF419A">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="DeviceGroups" Type="Self.DeviceGroups" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="Email" />
+            </Principal>
+            <Dependent Role="DeviceGroups">
+              <PropertyRef Name="Email" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Devices__Email__4222D4EF">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="Devices" Type="Self.Devices" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="Email" />
+            </Principal>
+            <Dependent Role="Devices">
+              <PropertyRef Name="Email" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DevicesAn__Devic__47DBAE45">
+          <End Role="Devices" Type="Self.Devices" Multiplicity="1" />
+          <End Role="DevicesAndGroups" Type="Self.DevicesAndGroups" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Devices">
+              <PropertyRef Name="DeviceID" />
+            </Principal>
+            <Dependent Role="DevicesAndGroups">
+              <PropertyRef Name="DeviceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DevicesAndGroups__48CFD27E">
+          <End Role="DeviceGroups" Type="Self.DeviceGroups" Multiplicity="1" />
+          <End Role="DevicesAndGroups" Type="Self.DevicesAndGroups" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DeviceGroups">
+              <PropertyRef Name="GroupName" />
+              <PropertyRef Name="Email" />
+            </Principal>
+            <Dependent Role="DevicesAndGroups">
+              <PropertyRef Name="GroupName" />
+              <PropertyRef Name="g_Email" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DeviceSta__Devic__4BAC3F29">
+          <End Role="Devices" Type="Self.Devices" Multiplicity="1" />
+          <End Role="DeviceStates" Type="Self.DeviceStates" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Devices">
+              <PropertyRef Name="DeviceID" />
+            </Principal>
+            <Dependent Role="DeviceStates">
+              <PropertyRef Name="DeviceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="AirU_Database_NamespaceStoreContainer">
+          <EntitySet Name="DataPoints" EntityType="Self.DataPoints" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DeviceGroups" EntityType="Self.DeviceGroups" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Devices" EntityType="Self.Devices" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DevicesAndGroups" EntityType="Self.DevicesAndGroups" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DeviceStates" EntityType="Self.DeviceStates" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Pollutants" EntityType="Self.Pollutants" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK__DataPoint__Devic__5070F446" Association="Self.FK__DataPoint__Devic__5070F446">
+            <End Role="Devices" EntitySet="Devices" />
+            <End Role="DataPoints" EntitySet="DataPoints" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DataPoint__Pollu__5165187F" Association="Self.FK__DataPoint__Pollu__5165187F">
+            <End Role="Pollutants" EntitySet="Pollutants" />
+            <End Role="DataPoints" EntitySet="DataPoints" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DeviceGro__Email__44FF419A" Association="Self.FK__DeviceGro__Email__44FF419A">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="DeviceGroups" EntitySet="DeviceGroups" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Devices__Email__4222D4EF" Association="Self.FK__Devices__Email__4222D4EF">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Devices" EntitySet="Devices" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DevicesAn__Devic__47DBAE45" Association="Self.FK__DevicesAn__Devic__47DBAE45">
+            <End Role="Devices" EntitySet="Devices" />
+            <End Role="DevicesAndGroups" EntitySet="DevicesAndGroups" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DevicesAndGroups__48CFD27E" Association="Self.FK__DevicesAndGroups__48CFD27E">
+            <End Role="DeviceGroups" EntitySet="DeviceGroups" />
+            <End Role="DevicesAndGroups" EntitySet="DevicesAndGroups" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DeviceSta__Devic__4BAC3F29" Association="Self.FK__DeviceSta__Devic__4BAC3F29">
+            <End Role="Devices" EntitySet="Devices" />
+            <End Role="DeviceStates" EntitySet="DeviceStates" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="AirU_Database_Namespace" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="DataPoint">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+            <PropertyRef Name="MeasurementTime" />
+            <PropertyRef Name="PollutantName" />
+          </Key>
+          <Property Name="DeviceID" Type="String" MaxLength="17" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="MeasurementTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Value" Type="Double" Nullable="false" />
+          <Property Name="PollutantName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Device" Relationship="Self.FK__DataPoint__Devic__5070F446" FromRole="DataPoints" ToRole="Devices" />
+          <NavigationProperty Name="Pollutant" Relationship="Self.FK__DataPoint__Pollu__5165187F" FromRole="DataPoints" ToRole="Pollutants" />
+        </EntityType>
+        <EntityType Name="DeviceGroup">
+          <Key>
+            <PropertyRef Name="GroupName" />
+            <PropertyRef Name="Email" />
+          </Key>
+          <Property Name="GroupName" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Email" Type="String" MaxLength="320" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="User" Relationship="Self.FK__DeviceGro__Email__44FF419A" FromRole="DeviceGroups" ToRole="Users" />
+          <NavigationProperty Name="Devices" Relationship="Self.DevicesAndGroups" FromRole="DeviceGroups" ToRole="Devices" />
+        </EntityType>
+        <EntityType Name="Device">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+          </Key>
+          <Property Name="DeviceID" Type="String" MaxLength="17" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Email" Type="String" MaxLength="320" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="DevicePrivacy" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="DataPoints" Relationship="Self.FK__DataPoint__Devic__5070F446" FromRole="Devices" ToRole="DataPoints" />
+          <NavigationProperty Name="User" Relationship="Self.FK__Devices__Email__4222D4EF" FromRole="Devices" ToRole="Users" />
+          <NavigationProperty Name="DeviceStates" Relationship="Self.FK__DeviceSta__Devic__4BAC3F29" FromRole="Devices" ToRole="DeviceStates" />
+          <NavigationProperty Name="DeviceGroups" Relationship="Self.DevicesAndGroups" FromRole="Devices" ToRole="DeviceGroups" />
+        </EntityType>
+        <EntityType Name="DeviceState">
+          <Key>
+            <PropertyRef Name="DeviceID" />
+            <PropertyRef Name="StateTime" />
+          </Key>
+          <Property Name="DeviceID" Type="String" MaxLength="17" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="StateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Lat" Type="Decimal" Precision="9" Scale="6" Nullable="false" />
+          <Property Name="Long" Type="Decimal" Precision="9" Scale="6" Nullable="false" />
+          <Property Name="InOrOut" Type="Boolean" Nullable="false" />
+          <Property Name="StatePrivacy" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="Device" Relationship="Self.FK__DeviceSta__Devic__4BAC3F29" FromRole="DeviceStates" ToRole="Devices" />
+        </EntityType>
+        <EntityType Name="Pollutant">
+          <Key>
+            <PropertyRef Name="PollutantName" />
+          </Key>
+          <Property Name="PollutantName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="DataPoints" Relationship="Self.FK__DataPoint__Pollu__5165187F" FromRole="Pollutants" ToRole="DataPoints" />
+        </EntityType>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="Email" />
+          </Key>
+          <Property Name="Email" Type="String" MaxLength="320" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Pass" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="DeviceGroups" Relationship="Self.FK__DeviceGro__Email__44FF419A" FromRole="Users" ToRole="DeviceGroups" />
+          <NavigationProperty Name="Devices" Relationship="Self.FK__Devices__Email__4222D4EF" FromRole="Users" ToRole="Devices" />
+        </EntityType>
+        <Association Name="FK__DataPoint__Devic__5070F446">
+          <End Role="Devices" Type="Self.Device" Multiplicity="1" />
+          <End Role="DataPoints" Type="Self.DataPoint" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Devices">
+              <PropertyRef Name="DeviceID" />
+            </Principal>
+            <Dependent Role="DataPoints">
+              <PropertyRef Name="DeviceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DataPoint__Pollu__5165187F">
+          <End Role="Pollutants" Type="Self.Pollutant" Multiplicity="1" />
+          <End Role="DataPoints" Type="Self.DataPoint" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Pollutants">
+              <PropertyRef Name="PollutantName" />
+            </Principal>
+            <Dependent Role="DataPoints">
+              <PropertyRef Name="PollutantName" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DeviceGro__Email__44FF419A">
+          <End Role="Users" Type="Self.User" Multiplicity="1" />
+          <End Role="DeviceGroups" Type="Self.DeviceGroup" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="Email" />
+            </Principal>
+            <Dependent Role="DeviceGroups">
+              <PropertyRef Name="Email" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Devices__Email__4222D4EF">
+          <End Role="Users" Type="Self.User" Multiplicity="1" />
+          <End Role="Devices" Type="Self.Device" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="Email" />
+            </Principal>
+            <Dependent Role="Devices">
+              <PropertyRef Name="Email" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__DeviceSta__Devic__4BAC3F29">
+          <End Role="Devices" Type="Self.Device" Multiplicity="1" />
+          <End Role="DeviceStates" Type="Self.DeviceState" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Devices">
+              <PropertyRef Name="DeviceID" />
+            </Principal>
+            <Dependent Role="DeviceStates">
+              <PropertyRef Name="DeviceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="DevicesAndGroups">
+          <End Role="Devices" Type="Self.Device" Multiplicity="*" />
+          <End Role="DeviceGroups" Type="Self.DeviceGroup" Multiplicity="*" />
+        </Association>
+        <EntityContainer Name="AirU_Database_Entity" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="DataPoints" EntityType="Self.DataPoint" />
+          <EntitySet Name="DeviceGroups" EntityType="Self.DeviceGroup" />
+          <EntitySet Name="Devices" EntityType="Self.Device" />
+          <EntitySet Name="DeviceStates" EntityType="Self.DeviceState" />
+          <EntitySet Name="Pollutants" EntityType="Self.Pollutant" />
+          <EntitySet Name="Users" EntityType="Self.User" />
+          <AssociationSet Name="FK__DataPoint__Devic__5070F446" Association="Self.FK__DataPoint__Devic__5070F446">
+            <End Role="Devices" EntitySet="Devices" />
+            <End Role="DataPoints" EntitySet="DataPoints" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DataPoint__Pollu__5165187F" Association="Self.FK__DataPoint__Pollu__5165187F">
+            <End Role="Pollutants" EntitySet="Pollutants" />
+            <End Role="DataPoints" EntitySet="DataPoints" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DeviceGro__Email__44FF419A" Association="Self.FK__DeviceGro__Email__44FF419A">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="DeviceGroups" EntitySet="DeviceGroups" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Devices__Email__4222D4EF" Association="Self.FK__Devices__Email__4222D4EF">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Devices" EntitySet="Devices" />
+          </AssociationSet>
+          <AssociationSet Name="FK__DeviceSta__Devic__4BAC3F29" Association="Self.FK__DeviceSta__Devic__4BAC3F29">
+            <End Role="Devices" EntitySet="Devices" />
+            <End Role="DeviceStates" EntitySet="DeviceStates" />
+          </AssociationSet>
+          <AssociationSet Name="DevicesAndGroups" Association="Self.DevicesAndGroups">
+            <End Role="Devices" EntitySet="Devices" />
+            <End Role="DeviceGroups" EntitySet="DeviceGroups" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="AirU_Database_NamespaceStoreContainer" CdmEntityContainer="AirU_Database_Entity">
+          <EntitySetMapping Name="DataPoints">
+            <EntityTypeMapping TypeName="AirU_Database_Namespace.DataPoint">
+              <MappingFragment StoreEntitySet="DataPoints">
+                <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+                <ScalarProperty Name="MeasurementTime" ColumnName="MeasurementTime" />
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="PollutantName" ColumnName="PollutantName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DeviceGroups">
+            <EntityTypeMapping TypeName="AirU_Database_Namespace.DeviceGroup">
+              <MappingFragment StoreEntitySet="DeviceGroups">
+                <ScalarProperty Name="GroupName" ColumnName="GroupName" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Devices">
+            <EntityTypeMapping TypeName="AirU_Database_Namespace.Device">
+              <MappingFragment StoreEntitySet="Devices">
+                <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="DevicePrivacy" ColumnName="DevicePrivacy" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DeviceStates">
+            <EntityTypeMapping TypeName="AirU_Database_Namespace.DeviceState">
+              <MappingFragment StoreEntitySet="DeviceStates">
+                <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+                <ScalarProperty Name="StateTime" ColumnName="StateTime" />
+                <ScalarProperty Name="Lat" ColumnName="Lat" />
+                <ScalarProperty Name="Long" ColumnName="Long" />
+                <ScalarProperty Name="InOrOut" ColumnName="InOrOut" />
+                <ScalarProperty Name="StatePrivacy" ColumnName="StatePrivacy" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Pollutants">
+            <EntityTypeMapping TypeName="AirU_Database_Namespace.Pollutant">
+              <MappingFragment StoreEntitySet="Pollutants">
+                <ScalarProperty Name="PollutantName" ColumnName="PollutantName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Users">
+            <EntityTypeMapping TypeName="AirU_Database_Namespace.User">
+              <MappingFragment StoreEntitySet="Users">
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="Pass" ColumnName="Pass" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="DevicesAndGroups" TypeName="AirU_Database_Namespace.DevicesAndGroups" StoreEntitySet="DevicesAndGroups">
+            <EndProperty Name="Devices">
+              <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+            </EndProperty>
+            <EndProperty Name="DeviceGroups">
+              <ScalarProperty Name="GroupName" ColumnName="GroupName" />
+              <ScalarProperty Name="Email" ColumnName="g_Email" />
+            </EndProperty>
+          </AssociationSetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
