@@ -258,9 +258,9 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="device"></param>
         /// <returns></returns>
-        [Route("api/ams")]
+        [Route("api/ams/add-device")]
         [HttpPost]
-        public HttpResponseMessage AddAMSDevice([FromBody] Device device)
+        public HttpResponseMessage AddAMSDevice([FromBody]Device device)
         {
             var db = new AirUDatabaseCOE();
 
@@ -283,22 +283,22 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="value"></param>
-        [Route("api/ams")]
-        [HttpPut]
-        public void Put(int id, [FromBody]string value)
-        {
+        //[Route("api/ams")]
+        //[HttpPut]
+        //public void Put(int id, [FromBody]string value)
+        //{
        
-        }
+        //}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
-        [Route("api/ams")]
-        [HttpDelete]
-        public void Delete(int id)
-        {
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="id"></param>
+        //[Route("api/ams")]
+        //[HttpDelete]
+        //public void Delete(int id)
+        //{
           
-        }
+        //}
     }
 }

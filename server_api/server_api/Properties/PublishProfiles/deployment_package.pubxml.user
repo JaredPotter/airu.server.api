@@ -165,6 +165,18 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     <File Include="bin/Microsoft.Data.OData.dll">
       <publishTime>11/25/2015 14:58:50</publishTime>
     </File>
+    <File Include="bin/Microsoft.Owin.dll">
+      <publishTime>11/26/2015 09:44:46</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Host.HttpListener.dll">
+      <publishTime>11/26/2015 11:13:17</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Host.SystemWeb.dll">
+      <publishTime>11/26/2015 09:44:46</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Hosting.dll">
+      <publishTime>11/26/2015 11:13:17</publishTime>
+    </File>
     <File Include="bin/Microsoft.Web.Infrastructure.dll">
       <publishTime>11/25/2015 14:35:35</publishTime>
     </File>
@@ -173,6 +185,9 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     </File>
     <File Include="bin/Newtonsoft.Json.dll">
       <publishTime>11/25/2015 14:58:52</publishTime>
+    </File>
+    <File Include="bin/Owin.dll">
+      <publishTime>11/26/2015 09:44:46</publishTime>
     </File>
     <File Include="bin/ru/Microsoft.Data.Edm.resources.dll">
       <publishTime>11/25/2015 14:58:51</publishTime>
@@ -184,7 +199,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/25/2015 14:58:50</publishTime>
     </File>
     <File Include="bin/server_api.dll">
-      <publishTime>11/25/2015 16:31:40</publishTime>
+      <publishTime>11/29/2015 12:38:12</publishTime>
+    </File>
+    <File Include="bin/Swashbuckle.Core.dll">
+      <publishTime>11/26/2015 11:02:15</publishTime>
     </File>
     <File Include="bin/System.Net.Http.Formatting.dll">
       <publishTime>11/25/2015 14:58:49</publishTime>
@@ -200,6 +218,9 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     </File>
     <File Include="bin/System.Web.Http.OData.dll">
       <publishTime>11/25/2015 14:58:49</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.Owin.dll">
+      <publishTime>11/26/2015 11:13:17</publishTime>
     </File>
     <File Include="bin/System.Web.Http.SelfHost.dll">
       <publishTime>11/25/2015 14:58:49</publishTime>
@@ -233,6 +254,9 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     </File>
     <File Include="bin/WebActivator.dll">
       <publishTime>11/25/2015 14:31:56</publishTime>
+    </File>
+    <File Include="bin/WebActivatorEx.dll">
+      <publishTime>11/26/2015 09:36:24</publishTime>
     </File>
     <File Include="bin/WebGrease.dll">
       <publishTime>11/25/2015 14:58:52</publishTime>
@@ -526,7 +550,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/22/2015 14:07:46</publishTime>
     </File>
     <File Include="packages.config">
-      <publishTime>11/25/2015 14:59:56</publishTime>
+      <publishTime>11/26/2015 22:45:48</publishTime>
     </File>
     <File Include="Scripts/jquery-1.8.2.js">
       <publishTime>11/22/2015 14:07:46</publishTime>
@@ -610,7 +634,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/22/2015 14:07:46</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>11/25/2015 16:31:40</publishTime>
+      <publishTime>11/29/2015 12:38:12</publishTime>
     </File>
   </ItemGroup>
 </Project>

@@ -89,3 +89,16 @@ C:\gitlab\airu.server.api\server_api\server_api\bin\System.Web.Http.WebHost.xml
 C:\gitlab\airu.server.api\server_api\server_api\bin\System.Web.Optimization.xml
 C:\gitlab\airu.server.api\server_api\server_api\bin\System.Web.Providers.xml
 C:\gitlab\airu.server.api\server_api\server_api\bin\WebActivator.pdb
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.Host.HttpListener.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.Host.SystemWeb.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.Hosting.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\Owin.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\Swashbuckle.Core.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\System.Web.Http.Owin.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\WebActivatorEx.dll
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.xml
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.Host.HttpListener.xml
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.Host.SystemWeb.xml
+C:\gitlab\airu.server.api\server_api\server_api\bin\Microsoft.Owin.Hosting.xml
+C:\gitlab\airu.server.api\server_api\server_api\bin\System.Web.Http.Owin.xml
