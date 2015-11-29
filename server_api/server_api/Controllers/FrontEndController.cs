@@ -25,7 +25,7 @@ namespace server_api.Controllers
         [HttpGet]
         public IEnumerable<string> GetAllRegisteredUsers()
         {
-            var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             List<User> allUsers = db.Users.Select(x => x).ToList<User>();
             List<string> allUsersString = new List<string>();
@@ -175,7 +175,7 @@ namespace server_api.Controllers
         [HttpGet]
         public HttpResponseMessage GetAMSData()
         {
-            var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             // TODO: Add API database calls to retrive data and return to frontend.
 
@@ -196,7 +196,7 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage UserRegistration([FromBody]User user)
         {
-            var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             User existingUser = db.Users.SingleOrDefault(x => x.Email == user.Email);
 
@@ -233,7 +233,7 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage UserLogin([FromBody]User user)
         {
-            var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             User validUserAndPass = db.Users.SingleOrDefault(x => x.Email == user.Email && x.Pass == user.Pass);
 
@@ -262,7 +262,7 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage AddAMSDevice([FromBody] Device device)
         {
-            var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             Device newDevice = new Device();
             newDevice.DeviceID = device.DeviceID;           // Ex. "ZZ-ZZ-ZZ-JJ-JJ-JJ".
