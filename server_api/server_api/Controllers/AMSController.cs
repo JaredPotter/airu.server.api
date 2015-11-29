@@ -81,36 +81,40 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("api/ams/state")]
         [HttpPost]
-        public HttpResponseMessage PostAMSState([FromBody]DeviceState state)
+        public HttpResponseMessage PostAMSState([FromBody]DeviceState[] states)
         {
             var db = new AirU_Database_Entity();
 
-            Device device = db.Devices.SingleOrDefault(x => x.DeviceID == state.DeviceID);
+            //Device device = db.Devices.SingleOrDefault(x => x.DeviceID == state.DeviceID);
 
-            if (device == null)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Failed to add device state with Device with ID = " + state.DeviceID + " not found.");
-            }
+            //if (device == null)
+            //{
+            //    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Failed to add device state with Device with ID = " + state.DeviceID + " not found.");
+            //}
 
 
             // TODO: Remove the StatePrivacy and InOrOut data members from this model.
-            DeviceState newDeviceState = new DeviceState();
-            newDeviceState.DeviceID = state.DeviceID;                // Ex. "ZZ-ZZ-ZZ-JJ-JJ-JJ";
-            newDeviceState.InOrOut = state.InOrOut;           // Ex. false;
-            newDeviceState.StatePrivacy = state.StatePrivacy; // Ex.  false;
-            newDeviceState.StateTime = state.StateTime;     // Ex. new DateTime(2015, 11, 25, 13, 16, 1);
-            newDeviceState.Long = state.Long;     // Ex. 123.456789m;
-            newDeviceState.Lat = state.Lat;       // Ex. 87.1224m;
-            db.DeviceStates.Add(newDeviceState);
+            //DeviceState newDeviceState = new DeviceState();
+            //newDeviceState.DeviceID = state.DeviceID;                // Ex. "ZZ-ZZ-ZZ-JJ-JJ-JJ";
+            //newDeviceState.InOrOut = state.InOrOut;           // Ex. false;
+            //newDeviceState.StatePrivacy = state.StatePrivacy; // Ex.  false;
+            //newDeviceState.StateTime = state.StateTime;     // Ex. new DateTime(2015, 11, 25, 13, 16, 1);
+            //newDeviceState.Long = state.Long;     // Ex. 123.456789m;
+            //newDeviceState.Lat = state.Lat;       // Ex. 87.1224m;
+            //db.DeviceStates.Add(newDeviceState);
+
+            db.DeviceStates.AddRange(states);
 
             db.SaveChanges();
 
-            var message = Request.CreateResponse(HttpStatusCode.OK, "Successfully added device state: \n\tDevice ID = " + newDeviceState.DeviceID +
-                                                                                                     "\n\t1nOr0ut = " + newDeviceState.InOrOut +
-                                                                                                     "\n\tStatePrivacy = " + newDeviceState.StatePrivacy +
-                                                                                                     "\n\tStartTieme = " + newDeviceState.StateTime +
-                                                                                                     "\n\tLong = " + newDeviceState.Long +
-                                                                                                     "\n\tLat = " + newDeviceState.Lat);
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+
+            //, "Successfully added device state: \n\tDevice ID = " + newDeviceState.DeviceID +
+            //                                                                                         "\n\t1nOr0ut = " + newDeviceState.InOrOut +
+            //                                                                                         "\n\tStatePrivacy = " + newDeviceState.StatePrivacy +
+            //                                                                                         "\n\tStartTieme = " + newDeviceState.StateTime +
+            //                                                                                         "\n\tLong = " + newDeviceState.Long +
+            //                                                                                         "\n\tLat = " + newDeviceState.Lat
             //string json = JsonConvert.SerializeObject(state);
 
             //message.Content = new StringContent(json);
