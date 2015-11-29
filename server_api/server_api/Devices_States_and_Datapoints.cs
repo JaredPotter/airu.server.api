@@ -6,26 +6,32 @@ namespace server_api
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class DataPoint
+    public partial class Devices_States_and_Datapoints
     {
-        [Key]
-        [Column(Order = 0)]
         [StringLength(17)]
         public string DeviceID { get; set; }
 
+        public DateTime? StateTime { get; set; }
+
         [Key]
-        [Column(Order = 1)]
+        [Column(Order = 0)]
         public DateTime MeasurementTime { get; set; }
 
+        public decimal? Lat { get; set; }
+
+        public decimal? Long { get; set; }
+
+        public bool? InOrOut { get; set; }
+
+        public bool? StatePrivacy { get; set; }
+
+        [Key]
+        [Column(Order = 1)]
         public double Value { get; set; }
 
         [Key]
         [Column(Order = 2)]
         [StringLength(30)]
         public string PollutantName { get; set; }
-
-        public virtual Device Device { get; set; }
-
-        public virtual Pollutant Pollutant { get; set; }
     }
 }

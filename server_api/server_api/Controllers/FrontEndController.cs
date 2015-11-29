@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -48,14 +49,15 @@ namespace server_api.Controllers
         [HttpGet]
         public HttpResponseMessage GetRegisteredUser([FromBody]string email)
         {
-            var db = new AirU_Database_Entity();
+            //var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
 
             if (registeredUser != null)
             {
                 // User with email address: <email> does exsit.
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "User with email addres: = " + registeredUser.Email + " does exist.");
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "User with email address: = " + registeredUser.Email + " does exist.");
             }
             else
             {
@@ -63,6 +65,107 @@ namespace server_api.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [Route("api/ams/AMSData/latest")]
+        [HttpGet]
+        public HttpResponseMessage GetLatestMapValues()
+        {
+            LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
+
+            // DEFAULT VALUES
+            DateTime measurementTimeMax = DateTime.Now;
+            int inOrOut = 0; // 0 = Outside, 1 = Inside
+            int statePrivacy = 0; // 0 = Not Private, 1 = Private
+            
+
+            // SHOULD BE VARIABLE
+            int latMin = -180;
+            int latMax = 180;
+            int longMin = -180;
+            int longMax = 180;
+            String pollutantName = "Temperature";
+
+            // CURRENTLY NOT USED
+            String deviceID = "12-34-56-78-9A-BC";
+            DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
+
+
+            //SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Zach\Documents\AirU.mdf;Integrated Security=True;Connect Timeout=30");
+            SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+            //SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;PASSWORD=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+
+            using (SqlConnection myConnection = conn)
+            {
+                string oString = @"select Devices_States_and_Datapoints.*
+                                    from
+                                    Devices_States_and_Datapoints
+                                    right join
+                                    (
+	                                    select DeviceID, max(MeasurementTime) as MeasurementTime
+	                                    from Devices_States_and_Datapoints
+	                                    where MeasurementTime < @measurementTimeMax
+	                                    and Lat >= @latMin
+	                                    and Lat <= @latMax
+	                                    and Long >= @longMin
+	                                    and Long < @longMax
+	                                    and InOrOut = @inOrOut
+	                                    and StatePrivacy = @statePrivacy
+	                                    and PollutantName = @pollutantName
+	                                    group by DeviceID
+                                    ) as LatestValues
+                                    on Devices_States_and_Datapoints.MeasurementTime=LatestValues.MeasurementTime
+                                    and Devices_States_and_Datapoints.DeviceID = LatestValues.DeviceID;";
+                SqlCommand oCmd = new SqlCommand(oString, myConnection);
+
+
+                String time = DateTime.Now.ToString("G");
+                oCmd.Parameters.AddWithValue("@deviceID", deviceID);
+                oCmd.Parameters.AddWithValue("@measurementTimeMax", measurementTimeMax);
+                oCmd.Parameters.AddWithValue("@measurementTimeMin", measurementTimeMin);
+                oCmd.Parameters.AddWithValue("@latMin", latMin);
+                oCmd.Parameters.AddWithValue("@latMax", latMax);
+                oCmd.Parameters.AddWithValue("@longMin", longMin);
+                oCmd.Parameters.AddWithValue("@longMax", longMax);
+                oCmd.Parameters.AddWithValue("@inOrOut", inOrOut);
+                oCmd.Parameters.AddWithValue("@statePrivacy", statePrivacy);
+                oCmd.Parameters.AddWithValue("@pollutantName", pollutantName);
+                //oCmd.Parameters.AddWithValue("@deviceID", "12-34-56-78-9A-BC");
+
+                myConnection.Open();
+                using (SqlDataReader oReader = oCmd.ExecuteReader())
+                {
+                    while (oReader.Read())
+                    {
+                        Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
+                        result.DeviceID = oReader["DeviceID"].ToString();
+                        result.StateTime = (DateTime)oReader["StateTime"];
+                        result.MeasurementTime = (DateTime)oReader["MeasurementTime"];
+                        result.Lat = (decimal)oReader["Lat"];
+                        result.Long = (decimal)oReader["Long"];
+                        result.InOrOut = (bool)oReader["InOrOut"];
+                        result.StatePrivacy = (bool)oReader["StatePrivacy"];
+                        result.Value = (double)oReader["Value"];
+                        result.PollutantName = oReader["PollutantName"].ToString();
+                        results.AddLast(result);
+                    }
+
+                    myConnection.Close();
+                }
+            }
+
+
+            Console.WriteLine("Hello");
+
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+            return message;
+
+        }
+
+
 
         /// <summary>
         /// 
