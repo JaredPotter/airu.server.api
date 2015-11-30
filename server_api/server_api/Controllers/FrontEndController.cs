@@ -258,23 +258,36 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="device"></param>
         /// <returns></returns>
-        [Route("api/ams/add-device")]
+        [Route("api/ams/add")]
         [HttpPost]
-        public HttpResponseMessage AddAMSDevice([FromBody]Device device)
+        public HttpResponseMessage AddAMSDevice([FromBody]DeviceAndState newDeviceAndState)
         {
             var db = new AirUDatabaseCOE();
 
-            Device newDevice = new Device();
-            newDevice.DeviceID = device.DeviceID;           // Ex. "ZZ-ZZ-ZZ-JJ-JJ-JJ".
-            newDevice.DevicePrivacy = device.DevicePrivacy; // Ex. false.
-            newDevice.Email = device.Email;                 // Ex. "steve@jobs.com";
-            db.Devices.Add(newDevice);
+            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceAndState.device.DeviceID);
+
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+
+            if (existingDevice != null)
+            {
+                // Add device success.
+                db.Devices.Add(newDeviceAndState.device);
+                newDeviceAndState.state.StateTime = new DateTime(1900, 1, 1);
+                newDeviceAndState.state.Long = 360.0m;
+                newDeviceAndState.state.Lat = 360.0m;
+                db.DeviceStates.Add(newDeviceAndState.state);
+                message.Content = new StringContent("Successfully added device: \n\tDeviceID = " + newDeviceAndState.device.DeviceID +
+                                                                               "\n\tDevicePrivacy = " + newDeviceAndState.device.DevicePrivacy +
+                                                                               "\n\tEmail = " + newDeviceAndState.device.Email);
+            }
+            else
+            {
+                // Add device fail.
+                message.Content = new StringContent("Adding device with DeviceID = " + newDeviceAndState.device.DeviceID + " was unsuccessful!");
+            }
 
             db.SaveChanges();
 
-            var message = Request.CreateResponse(HttpStatusCode.OK, "Successfully added device: \n\tDeviceID = "      + newDevice.DeviceID +
-                                                                                               "\n\tDevicePrivacy = " + newDevice.DevicePrivacy +
-                                                                                               "\n\tEmail = "         + newDevice.Email);
             return message;
         }
 
@@ -300,5 +313,11 @@ namespace server_api.Controllers
         //{
           
         //}
+
+        public class DeviceAndState
+        {
+            public Device device {get; set;}
+            public DeviceState state {get; set;}
+        }
     }
 }
