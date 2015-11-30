@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 
@@ -40,31 +42,74 @@ namespace server_api.Controllers
 
         [Route("api/frontend/AMSDataPointsPoints")]
         [HttpPost]
-        public IEnumerable<string> GetAllDataPointsForAMS([FromBody]string deviceID)
+        public HttpResponseMessage GetAllDataPointsForAMS([FromBody]string deviceID)
         {
             // Does not actually pull in the deviceID
             var db = new AirUDatabaseCOE();
+            List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
+            string pName = pollutants[0].PollutantName;
 
-            var allUsers = from a in db.Devices_States_and_Datapoints
-                           where a.DeviceID == deviceID
-                           select a;
+            AllAMSDataPoints dataPoints = new AllAMSDataPoints();
 
-            List<string> allDataPointsString = new List<string>();
+            StringBuilder msg = new StringBuilder();
+            msg.Append("[");
 
-            foreach (var item in allUsers)
+            foreach (Pollutant p in pollutants)
             {
-                allDataPointsString.Add(deviceID +
-                                   "\nLatitude: " + item.Lat +
-                                   "\nLongitude: " + item.Long +
-                                   "\nMeasurementTime: " + item.MeasurementTime +
-                                   "\nPollutantName: " + item.PollutantName +
-                                   "\nValue: " + item.Value + 
-                                   "\nStateTime: " + item.StateTime
+                
+                var amsDataForPollutant = from a in db.Devices_States_and_Datapoints
+                                          where a.DeviceID == deviceID
+                                          && a.PollutantName == p.PollutantName
+                                          orderby a.MeasurementTime
+                                          select a;
 
-                );
+                /* MOVE ALTITUDE TO STATE */
+                if (amsDataForPollutant.Count() != 0 || p.PollutantName.Equals("Altitude"))
+                {
+                    msg.Append("{\"key\": \"");
+                    msg.Append(p.PollutantName);
+                    msg.Append("\", \"values\": [");
+
+                    AMSPollutant curPollutantDPs = new AMSPollutant(p.PollutantName);
+
+
+
+                    foreach (var item in amsDataForPollutant)
+                    {
+                        msg.Append("[");
+                        msg.Append(ConvertDateTimeToMilliseconds(item.MeasurementTime));
+                        msg.Append(", ");
+                        msg.Append(item.Value);
+
+                        curPollutantDPs.AddValue(item.MeasurementTime, item.Value);
+
+                        msg.Append("], ");
+                    }
+
+                    msg.Remove(msg.Length - 2, 2);
+
+                    msg.Append("]}, ");
+
+                    //msg.ToString().Substring(0, msg.Length - 2);
+                    dataPoints.pollutantList.Add(curPollutantDPs);
+                }
+                
             }
 
-            return allDataPointsString;
+            msg.Remove(msg.Length - 2, 2);
+
+            msg.Append("]");
+
+
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+
+            //string json = JsonConvert.SerializeObject(dataPoints);
+
+            message.Content = new StringContent(msg.ToString());
+
+
+            return message;
+            //return allDataPointsString;
         }
 
         /// <summary>
@@ -343,10 +388,48 @@ namespace server_api.Controllers
           
         //}
 
+
+        public long ConvertDateTimeToMilliseconds(DateTime date)
+        {
+            return (long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds;
+        }
+
         public class DeviceAndState
         {
             public Device device {get; set;}
             public DeviceState state {get; set;}
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class AllAMSDataPoints
+        {
+            public List<AMSPollutant> pollutantList {get; set;}
+
+            public AllAMSDataPoints()
+            {
+                pollutantList = new List<AMSPollutant>();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class AMSPollutant
+        {
+            public string key {get; set;}
+            public List<Tuple<long, double>> values;
+
+            public AMSPollutant(string Key)
+            {
+                key = Key;
+                values = new List<Tuple<long, double>>();
+            }
+
+            public void AddValue(DateTime date, double value){
+                values.Add(new Tuple<long, double>((long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds, value));
+            }
         }
     }
 }
