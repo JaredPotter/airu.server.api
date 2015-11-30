@@ -38,6 +38,35 @@ namespace server_api.Controllers
             return allUsersString;
         }
 
+        [Route("api/frontend/AMSDevicePoints")]
+        [HttpPost]
+        public IEnumerable<string> GetAllDevicePointsForAMS([FromBody]string deviceID)
+        {
+            // Does not actually pull in the deviceID
+            var db = new AirUDatabaseCOE();
+
+            var allUsers = from a in db.Devices_States_and_Datapoints
+                           where a.DeviceID == deviceID
+                           select a;
+
+            List<string> allDataPointsString = new List<string>();
+
+            foreach (var item in allUsers)
+            {
+                allDataPointsString.Add(deviceID +
+                                   "\nLatitude: " + item.Lat +
+                                   "\nLongitude: " + item.Long +
+                                   "\nMeasurementTime: " + item.MeasurementTime +
+                                   "\nPollutantName: " + item.PollutantName +
+                                   "\nValue: " + item.Value + 
+                                   "\nStateTime: " + item.StateTime
+
+                );
+            }
+
+            return allDataPointsString;
+        }
+
         /// <summary>
         ///   This is a testing method.
         ///   
