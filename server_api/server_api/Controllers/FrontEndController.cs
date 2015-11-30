@@ -38,9 +38,9 @@ namespace server_api.Controllers
             return allUsersString;
         }
 
-        [Route("api/frontend/AMSDevicePoints")]
+        [Route("api/frontend/AMSDataPointsPoints")]
         [HttpPost]
-        public IEnumerable<string> GetAllDevicePointsForAMS([FromBody]string deviceID)
+        public IEnumerable<string> GetAllDataPointsForAMS([FromBody]string deviceID)
         {
             // Does not actually pull in the deviceID
             var db = new AirUDatabaseCOE();
