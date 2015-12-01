@@ -12,6 +12,9 @@ using System.Web.Http;
 
 namespace server_api.Controllers
 {
+    /// <summary>
+    /// The API Controller that interacts with the Web App
+    /// </summary>
     public class FrontEndController : ApiController
     {
 
@@ -19,7 +22,7 @@ namespace server_api.Controllers
         /// <summary>
         ///   This is a testing method. 
         ///   
-        ///   This method returns all registered users' email addresses.
+        ///   This method simply returns successful.
         /// </summary>
         /// <returns></returns>
         [Route("api/frontend/servertest")]
@@ -30,8 +33,6 @@ namespace server_api.Controllers
             message.Content = new StringContent("Success");
             return message;
         }
-
-
 
         /// <summary>
         ///   This is a testing method. 
@@ -73,7 +74,7 @@ namespace server_api.Controllers
 
             string pName = pollutants[0].PollutantName;
 
-            AllAMSDataPoints dataPoints = new AllAMSDataPoints();
+            AMSPollutantsData dataPoints = new AMSPollutantsData();
 
             StringBuilder msg = new StringBuilder();
             msg.Append("[");
@@ -94,7 +95,7 @@ namespace server_api.Controllers
                     msg.Append(p.PollutantName);
                     msg.Append("\", \"values\": [");
 
-                    AMSPollutant curPollutantDPs = new AMSPollutant(p.PollutantName);
+                    PollutantDataSet curPollutantDPs = new PollutantDataSet(p.PollutantName);
 
 
 
@@ -245,9 +246,12 @@ namespace server_api.Controllers
         }
 
         /// <summary>
-        ///   Registers an AMS device.
+        /// Registers an AMS device:
+        /// - Validates request
+        /// - Updates Database to represent new association between existing user and 
+        ///    new device.
         /// </summary>
-        /// <param name="device"></param>
+        /// <param name="newDeviceAndState">The current Device and its DeviceState</param>
         /// <returns></returns>
         [Route("api/ams/add")]
         [HttpPost]
@@ -313,14 +317,14 @@ namespace server_api.Controllers
 
             // Send user list of AMS DeviceState. 
 
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            return message;
+            //var message = Request.CreateResponse(HttpStatusCode.OK);
+            //return message;
         }
 
         /// <summary>
-        ///   Updates a single AMS DeviceState from the "my devices" settings web page. 
+        /// Updates a single AMS DeviceState from the "my devices" settings web page.
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="state">The state of the device</param>
         /// <returns></returns>
         [Route("api/frontend/state")]
         [HttpPost]
@@ -350,7 +354,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("api/ams/latest")]
         [HttpPost]
-        public HttpResponseMessage GetLatestMapValues([FromBody]HeatMapParamters para)
+        public HttpResponseMessage GetLatestMapValues([FromBody]HeatMapParameters para)
         {
             LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
 
@@ -443,7 +447,7 @@ namespace server_api.Controllers
         ///   
         ///   Primary Use: Populate the Map View with AMS device icons. 
         /// </summary>
-        /// <param name="?"></param>
+        /// <param name="para">The NE and SW bounds of a map</param>
         /// <returns></returns>
         [Route("api/ams/map")]
         [HttpPost]
@@ -559,15 +563,15 @@ namespace server_api.Controllers
 
 
         /// <summary>
-        ///   Returns the AMS DeviceStates for all AMS devices within specified MapParameters.
+        ///   Returns the AMS DeviceStates for all AMS devices within specified HeatMapParameters.
         ///   
-        ///   Primary Use: Populate the Map View with AMS device icons. 
+        ///   Primary Use: Populate the HeatMap View with AMS device icons. 
         /// </summary>
-        /// <param name="?"></param>
+        /// <param name="para">The NE and SW bounds of a map and name of requested Pollutant</param>
         /// <returns></returns>
         [Route("api/ams/heatmap")]
         [HttpPost]
-        public HttpResponseMessage GetAllAMSDeviceStatesInMapRange([FromBody]MapParameters para)
+        public HttpResponseMessage GetAllAMSDeviceStatesInMapRange([FromBody]HeatMapParameters para)
         {
             LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
 
@@ -577,10 +581,10 @@ namespace server_api.Controllers
             int statePrivacy = 0; // 0 = Not Private, 1 = Private
 
             // SHOULD BE VARIABLE
-            decimal latMin = para.southWest.lat;
-            decimal latMax = para.northEast.lat;
-            decimal longMin = para.southWest.lng;
-            decimal longMax = para.northEast.lng;
+            decimal latMin = para.mapParameters.southWest.lat;
+            decimal latMax = para.mapParameters.northEast.lat;
+            decimal longMin = para.mapParameters.southWest.lng;
+            decimal longMax = para.mapParameters.northEast.lng;
 
             // CURRENTLY NOT USED
             /*
@@ -690,6 +694,7 @@ namespace server_api.Controllers
 
         }
 
+        /*
         ///// <summary>
         ///// 
         ///// </summary>
@@ -700,76 +705,140 @@ namespace server_api.Controllers
         {
 
         }
+        */
 
-
+        /// <summary>
+        /// Converts DateTime to compatible JS time in Milliseconds
+        /// </summary>
+        /// <param name="date">the date to be converted</param>
+        /// <returns>date in milliseconds since January 1st, 1970</returns>
         public long ConvertDateTimeToMilliseconds(DateTime date)
         {
             return (long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds;
         }
 
+        /// <summary>
+        /// This class represents both a Device and DeviceState object.
+        /// </summary>
         public class DeviceAndState
         {
+            /// <summary>
+            /// The Device
+            /// </summary>
             public Device device {get; set;}
+
+            /// <summary>
+            /// The DeviceState
+            /// </summary>
             public DeviceState state {get; set;}
         }
 
-        /*
+        /// <summary>
+        /// This class stores both the NE and SW bounds sent from a
+        /// map view.
+        /// </summary>
         public class MapParameters
         {
-            public int latMin {get; set;}
-            public int latMax {get; set;}
-            public int longMin {get; set;}
-            public int longMax {get; set;}
-        }
-        */
-
-        public class MapParameters
-        {
+            /// <summary>
+            /// NE coordinates
+            /// </summary>
             public Coordinate northEast { get; set; }
+
+            /// <summary>
+            /// SW coordinates
+            /// </summary>
             public Coordinate southWest { get; set; }
         }
 
+        /// <summary>
+        /// This class represents a coordinate, which contains both a
+        /// latitude and longitude;
+        /// </summary>
         public class Coordinate
         {
+            /// <summary>
+            /// Latitude
+            /// </summary>
             public decimal lat { get; set; }
+
+            /// <summary>
+            /// Longitude
+            /// </summary>
             public decimal lng { get; set; }
         }
 
-        public class HeatMapParamters
+        /// <summary>
+        /// This stores both the NE and SW bounds sent from a 
+        /// map view, and combines them with the name of a pollutant.
+        /// </summary>
+        public class HeatMapParameters
         {
+            /// <summary>
+            /// NE and SW bound
+            /// </summary>
             public MapParameters mapParameters {get; set;}
+
+            /// <summary>
+            /// Pollutant Name
+            /// </summary>
             public string pollutantName {get; set;}
         }
 
         /// <summary>
-        /// 
+        /// This class contains time/value data for each of an AMSes pollutants
         /// </summary>
-        public class AllAMSDataPoints
+        public class AMSPollutantsData
         {
-            public List<AMSPollutant> pollutantList {get; set;}
+            /// <summary>
+            /// List of PollutantDataSets for AMS
+            /// </summary>
+            public List<PollutantDataSet> pollutantList {get; set;}
 
-            public AllAMSDataPoints()
+            /// <summary>
+            /// Constructor - Initializes the AMS PollutantsData
+            /// </summary>
+            public AMSPollutantsData()
             {
-                pollutantList = new List<AMSPollutant>();
+                pollutantList = new List<PollutantDataSet>();
             }
         }
 
         /// <summary>
-        /// 
+        /// This class represents a pollutant and a set of times and values
+        /// that may be used to store the data of a pollutant over time.
         /// </summary>
-        public class AMSPollutant
+        public class PollutantDataSet
         {
+            /// <summary>
+            /// Pollutant Name
+            /// </summary>
             public string key {get; set;}
-            public List<Tuple<long, double>> values;
 
-            public AMSPollutant(string Key)
+            /// <summary>
+            /// List of a pair of DateTimes (long - represented in milliseconds
+            /// since 1970) and values (doubles)
+            /// </summary>
+            public List<Tuple<long, double>> points;
+
+            /// <summary>
+            /// Constructor - Creates a new instance with the key (Pollutant Name)
+            /// set to the argument provided.
+            /// </summary>
+            /// <param name="key">Pollutant Name</param>
+            public PollutantDataSet(string key)
             {
-                key = Key;
-                values = new List<Tuple<long, double>>();
+                this.key = key;
+                points = new List<Tuple<long, double>>();
             }
 
+            /// <summary>
+            /// Adds a pair, a date and a value, to the list of dates and values
+            /// 
+            /// </summary>
+            /// <param name="date">The time the value was measured for the point</param>
+            /// <param name="value">The measured value for the point</param>
             public void AddValue(DateTime date, double value){
-                values.Add(new Tuple<long, double>((long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds, value));
+                points.Add(new Tuple<long, double>((long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds, value));
             }
         }
     }
