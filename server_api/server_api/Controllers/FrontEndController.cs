@@ -16,6 +16,22 @@ namespace server_api.Controllers
     {
 
         // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /// <summary>
+        ///   This is a testing method. 
+        ///   
+        ///   This method returns all registered users' email addresses.
+        /// </summary>
+        /// <returns></returns>
+        [Route("api/frontend/servertest")]
+        [HttpGet]
+        public HttpResponseMessage ServerResponding()
+        {
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+            message.Content = new StringContent("Success");
+            return message;
+        }
+
+
 
         /// <summary>
         ///   This is a testing method. 
