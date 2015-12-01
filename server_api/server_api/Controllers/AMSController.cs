@@ -81,27 +81,16 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("api/ams/state")]
         [HttpPost]
-        public HttpResponseMessage PostAMSState([FromBody]DeviceState[] states)
+        public HttpResponseMessage UpdateAMSDeviceState([FromBody]DeviceState[] states)
         {
             var db = new AirU_Database_Entity();
 
-            //Device device = db.Devices.SingleOrDefault(x => x.DeviceID == state.DeviceID);
+            Device device = db.Devices.SingleOrDefault(x => x.DeviceID == states[0].DeviceID);
 
-            //if (device == null)
-            //{
-            //    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Failed to add device state with Device with ID = " + state.DeviceID + " not found.");
-            //}
-
-
-            // TODO: Remove the StatePrivacy and InOrOut data members from this model.
-            //DeviceState newDeviceState = new DeviceState();
-            //newDeviceState.DeviceID = state.DeviceID;                // Ex. "ZZ-ZZ-ZZ-JJ-JJ-JJ";
-            //newDeviceState.InOrOut = state.InOrOut;           // Ex. false;
-            //newDeviceState.StatePrivacy = state.StatePrivacy; // Ex.  false;
-            //newDeviceState.StateTime = state.StateTime;     // Ex. new DateTime(2015, 11, 25, 13, 16, 1);
-            //newDeviceState.Long = state.Long;     // Ex. 123.456789m;
-            //newDeviceState.Lat = state.Lat;       // Ex. 87.1224m;
-            //db.DeviceStates.Add(newDeviceState);
+            if (device == null)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Failed to add device state with Device with ID = " + states[0].DeviceID + " not found.");
+            }
 
             db.DeviceStates.AddRange(states);
 
@@ -109,17 +98,7 @@ namespace server_api.Controllers
 
             var message = Request.CreateResponse(HttpStatusCode.OK);
 
-            //, "Successfully added device state: \n\tDevice ID = " + newDeviceState.DeviceID +
-            //                                                                                         "\n\t1nOr0ut = " + newDeviceState.InOrOut +
-            //                                                                                         "\n\tStatePrivacy = " + newDeviceState.StatePrivacy +
-            //                                                                                         "\n\tStartTieme = " + newDeviceState.StateTime +
-            //                                                                                         "\n\tLong = " + newDeviceState.Long +
-            //                                                                                         "\n\tLat = " + newDeviceState.Lat
-            //string json = JsonConvert.SerializeObject(state);
-
-            //message.Content = new StringContent(json);
             return message;
-           
         }
 
         /// <summary>
@@ -127,23 +106,23 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="value"></param>
-        //[Route("api/ams")]
-        //[HttpPut]
-        //public void PutAMSData(int id, [FromBody]string value)
-        //{
-        
-        //}
+        [Route("api/ams")]
+        [HttpPut]
+        public void PutAMSData(int id, [FromBody]string value)
+        {
+
+        }
 
         ///// <summary>
         ///// 
         ///// </summary>
         ///// <param name="id"></param>
-        //[Route("api/ams")]
-        //[HttpDelete]
-        //public void Delete(int id)
-        //{
-    
-        //}
+        [Route("api/ams")]
+        [HttpDelete]
+        public void Delete(int id)
+        {
+
+        }
     }
 
     public class AMSDataSet
