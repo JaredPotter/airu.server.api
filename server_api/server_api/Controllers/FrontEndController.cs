@@ -25,7 +25,7 @@ namespace server_api.Controllers
         ///   This method simply returns successful.
         /// </summary>
         /// <returns></returns>
-        [Route("api/frontend/servertest")]
+        [Route("frontend/servertest")]
         [HttpGet]
         public HttpResponseMessage ServerResponding()
         {
@@ -40,7 +40,7 @@ namespace server_api.Controllers
         ///   This method returns all registered users' email addresses.
         /// </summary>
         /// <returns></returns>
-        [Route("api/frontend/registeredUsers")]
+        [Route("frontend/registeredUsers")]
         [HttpGet]
         public IEnumerable<string> GetAllRegisteredUsers()
         {
@@ -64,7 +64,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="deviceID"></param>
         /// <returns></returns>
-        [Route("api/frontend/AMSDataPointsPoints")]
+        [Route("frontend/AMSDataPointsPoints")]
         [HttpPost]
         public HttpResponseMessage GetAllDataPointsForAMS([FromBody]string deviceID)
         {
@@ -138,7 +138,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        [Route("api/frontend")]
+        [Route("frontend")]
         [HttpGet]
         public HttpResponseMessage GetRegisteredUser([FromBody]string email)
         {
@@ -163,7 +163,7 @@ namespace server_api.Controllers
         /// 
         /// </summary>
         /// <returns></returns>
-        [Route("api/ams/AMSData")]
+        [Route("ams/AMSData")]
         [HttpGet]
         public HttpResponseMessage GetAMSData()
         {
@@ -184,7 +184,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        [Route("api/frontend/register")]
+        [Route("frontend/register")]
         [HttpPost]
         public HttpResponseMessage UserRegistration([FromBody]User user)
         {
@@ -221,7 +221,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        [Route("api/frontend/login")]
+        [Route("frontend/login")]
         [HttpPost]
         public HttpResponseMessage UserLogin([FromBody]User user)
         {
@@ -253,7 +253,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="newDeviceAndState">The current Device and its DeviceState</param>
         /// <returns></returns>
-        [Route("api/ams/add")]
+        [Route("ams/add")]
         [HttpPost]
         public HttpResponseMessage AddAMSDevice([FromBody]DeviceAndState newDeviceAndState)
         {
@@ -291,7 +291,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        [Route("api/frontend/state")]
+        [Route("frontend/state")]
         [HttpPost]
         public HttpResponseMessage GetAMSDeviceStates([FromBody]string email)
         {
@@ -326,7 +326,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="state">The state of the device</param>
         /// <returns></returns>
-        [Route("api/frontend/state")]
+        [Route("frontend/state")]
         [HttpPost]
         public HttpResponseMessage UpdateAMSDeviceState([FromBody]DeviceState state)
         {
@@ -352,7 +352,7 @@ namespace server_api.Controllers
         ///   Primary Use: Heatmap.
         /// </summary>
         /// <returns></returns>
-        [Route("api/ams/latest")]
+        [Route("ams/latest")]
         [HttpPost]
         public HttpResponseMessage GetLatestMapValues([FromBody]HeatMapParameters para)
         {
@@ -449,7 +449,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="para">The NE and SW bounds of a map</param>
         /// <returns></returns>
-        [Route("api/ams/map")]
+        [Route("ams/map")]
         [HttpPost]
         public HttpResponseMessage GetAllAMSDevicesInMapRange([FromBody]MapParameters para)
         {
@@ -569,7 +569,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="para">The NE and SW bounds of a map and name of requested Pollutant</param>
         /// <returns></returns>
-        [Route("api/ams/heatmap")]
+        [Route("ams/heatmap")]
         [HttpPost]
         public HttpResponseMessage GetAllAMSDeviceStatesInMapRange([FromBody]HeatMapParameters para)
         {
@@ -666,7 +666,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="DeviceID"></param>
         /// <returns></returns>
-        [Route("api/frontend/singleLatest")]
+        [Route("frontend/singleLatest")]
         [HttpPost]
         public HttpResponseMessage GetLatestDataFromSingleAMSDevice([FromBody]string DeviceID)
         {
@@ -687,7 +687,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="value"></param>
-        [Route("api/ams")]
+        [Route("ams")]
         [HttpPut]
         public void Put(int id, [FromBody]string value)
         {
@@ -699,7 +699,7 @@ namespace server_api.Controllers
         ///// 
         ///// </summary>
         ///// <param name="id"></param>
-        [Route("api/ams")]
+        [Route("ams")]
         [HttpDelete]
         public void Delete(int id)
         {

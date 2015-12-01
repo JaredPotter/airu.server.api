@@ -20,7 +20,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="deviceState"></param>
         /// <returns></returns>
-        //[Route("api/ams")]
+        //[Route("ams")]
         //[HttpPost]
         //public HttpResponseMessage UpdateAMSDeviceState([FromBody]DeviceState deviceState)
         //{
@@ -57,7 +57,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="dataSet">AMSDataSet Model</param>
         /// <returns></returns>
-        [Route("api/ams/data")]
+        [Route("ams/data")]
         [HttpPost]
         public HttpResponseMessage AddAMSDataSet([FromBody]DataPoint[] dataSet)
         {
@@ -79,7 +79,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="state"></param>
         /// <returns></returns>
-        [Route("api/ams/state")]
+        [Route("ams/state")]
         [HttpPost]
         public HttpResponseMessage UpdateAMSDeviceState([FromBody]DeviceState[] states)
         {
@@ -106,7 +106,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="value"></param>
-        [Route("api/ams")]
+        [Route("ams")]
         [HttpPut]
         public void PutAMSData(int id, [FromBody]string value)
         {
@@ -117,7 +117,7 @@ namespace server_api.Controllers
         ///// 
         ///// </summary>
         ///// <param name="id"></param>
-        [Route("api/ams")]
+        [Route("ams")]
         [HttpDelete]
         public void Delete(int id)
         {
