@@ -278,8 +278,22 @@ namespace server_api.Controllers
             var db = new AirUDatabaseCOE();
 
             // Validate given email has associated User.
+            User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
+
+            if (registeredUser != null)
+            {
+                // User with email address: <email> does exsit.
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "User with email address: = " + registeredUser.Email + " does exist.");
+            }
+            else
+            {
+                // User with email address: <email> does not exist.
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+            }
+
 
             // Perform database query to retrive the most recent AMS DeviceStates for each AMS owned by User.
+
 
             // Send user list of AMS DeviceState. 
 
@@ -408,7 +422,6 @@ namespace server_api.Controllers
             return message;
         }
 
-
         /// <summary>
         ///   Returns the AMS DeviceStates for all AMS devices within specified MapParameters.
         ///   
@@ -417,6 +430,126 @@ namespace server_api.Controllers
         /// <param name="?"></param>
         /// <returns></returns>
         [Route("api/ams/map")]
+        [HttpPost]
+        public HttpResponseMessage GetAllAMSDevicesInMapRange([FromBody]MapParameters para)
+        {
+            LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
+
+            // DEFAULT VALUES
+            DateTime measurementTimeMax = DateTime.Now;
+            int inOrOut = 0; // 0 = Outside, 1 = Inside
+            int statePrivacy = 0; // 0 = Not Private, 1 = Private
+
+            // SHOULD BE VARIABLE
+            decimal latMin = para.southWest.lat;
+            decimal latMax = para.northEast.lat;
+            decimal longMin = para.southWest.lng;
+            decimal longMax = para.northEast.lng;
+
+            // CURRENTLY NOT USED
+            /*
+            String deviceID = "12-34-56-78-9A-BC";
+            DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
+            */
+
+            //SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Zach\Documents\AirU.mdf;Integrated Security=True;Connect Timeout=30");
+            SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+            //SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;PASSWORD=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+
+            using (SqlConnection myConnection = conn)
+            {
+                string oString = @"select MaxState.DeviceID, MaxState.StateTime, DeviceStates.Lat, DeviceStates.Long
+                                    from 
+                                    (
+	                                    select DeviceID, max(StateTime) as StateTime
+	                                    from Devices_States_and_Datapoints
+	                                    where 
+	                                    Lat >= @latMin
+                                        and Lat < @latMax
+                                        and Long >= @longMin
+                                        and Long < @longMax
+                                        and InOrOut = @inOrOut
+                                        and StatePrivacy = @statePrivacy
+	                                    group by DeviceID
+                                    ) as MaxState
+                                    left join DeviceStates
+                                    on MaxState.DeviceID=DeviceStates.DeviceID
+                                    and MaxState.StateTime=DeviceStates.StateTime;";
+                SqlCommand oCmd = new SqlCommand(oString, myConnection);
+
+                String time = DateTime.Now.ToString("G");
+                oCmd.Parameters.AddWithValue("@latMin", latMin);
+                oCmd.Parameters.AddWithValue("@latMax", latMax);
+                oCmd.Parameters.AddWithValue("@longMin", longMin);
+                oCmd.Parameters.AddWithValue("@longMax", longMax);
+                oCmd.Parameters.AddWithValue("@inOrOut", inOrOut);
+                oCmd.Parameters.AddWithValue("@statePrivacy", statePrivacy);
+
+                myConnection.Open();
+                using (SqlDataReader oReader = oCmd.ExecuteReader())
+                {
+                    while (oReader.Read())
+                    {
+                        Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
+                        result.DeviceID = oReader["DeviceID"].ToString();
+                        result.StateTime = (DateTime)oReader["StateTime"];
+                        result.Lat = (decimal)oReader["Lat"];
+                        result.Long = (decimal)oReader["Long"];
+                        results.AddLast(result);
+                    }
+
+                    myConnection.Close();
+                }
+            }
+
+            /*
+             * 
+               {
+                    "ams": [{
+                        "deviceID": "mac_addr",
+                        "lat": 40,
+                        "lng": -111
+                    }, {
+                        "deviceID": "mac_addr",
+                        "lat": 40,
+                        "lng": -111
+                    }]
+                }
+             * 
+             */
+            StringBuilder msg = new StringBuilder();
+
+            msg.Append("{ \"ams\": [");
+
+            foreach (Devices_States_and_Datapoints ams in results)
+            {
+                msg.Append("{\"deviceID\": \"");
+                msg.Append(ams.DeviceID);
+                msg.Append("\", \"lat\": ");
+                msg.Append(ams.Lat);
+                msg.Append(", \"lng\": ");
+                msg.Append(ams.Long);
+                msg.Append("}, ");
+            }
+            msg.Remove(msg.Length - 2, 2);
+            msg.Append("]}");
+
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+
+            message.Content = new StringContent(msg.ToString());
+
+            return message;
+        }
+
+
+        /// <summary>
+        ///   Returns the AMS DeviceStates for all AMS devices within specified MapParameters.
+        ///   
+        ///   Primary Use: Populate the Map View with AMS device icons. 
+        /// </summary>
+        /// <param name="?"></param>
+        /// <returns></returns>
+        [Route("api/ams/heatmap")]
         [HttpPost]
         public HttpResponseMessage GetAllAMSDeviceStatesInMapRange([FromBody]MapParameters para)
         {
@@ -428,15 +561,16 @@ namespace server_api.Controllers
             int statePrivacy = 0; // 0 = Not Private, 1 = Private
 
             // SHOULD BE VARIABLE
-            int latMin = -180;
-            int latMax = 180;
-            int longMin = -180;
-            int longMax = 180;
-            String pollutantName = "Temperature";
+            decimal latMin = para.southWest.lat;
+            decimal latMax = para.northEast.lat;
+            decimal longMin = para.southWest.lng;
+            decimal longMax = para.northEast.lng;
 
             // CURRENTLY NOT USED
+            /*
             String deviceID = "12-34-56-78-9A-BC";
             DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
+            */
 
             //SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Zach\Documents\AirU.mdf;Integrated Security=True;Connect Timeout=30");
             SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
@@ -458,7 +592,6 @@ namespace server_api.Controllers
 	                                    and Long < @longMax
 	                                    and InOrOut = @inOrOut
 	                                    and StatePrivacy = @statePrivacy
-	                                    and PollutantName = @pollutantName
 	                                    group by DeviceID
                                     ) as LatestValues
                                     on Devices_States_and_Datapoints.MeasurementTime=LatestValues.MeasurementTime
@@ -466,16 +599,16 @@ namespace server_api.Controllers
                 SqlCommand oCmd = new SqlCommand(oString, myConnection);
 
                 String time = DateTime.Now.ToString("G");
-                oCmd.Parameters.AddWithValue("@deviceID", deviceID);
+                //oCmd.Parameters.AddWithValue("@deviceID", deviceID);
                 oCmd.Parameters.AddWithValue("@measurementTimeMax", measurementTimeMax);
-                oCmd.Parameters.AddWithValue("@measurementTimeMin", measurementTimeMin);
+                //oCmd.Parameters.AddWithValue("@measurementTimeMin", measurementTimeMin);
                 oCmd.Parameters.AddWithValue("@latMin", latMin);
                 oCmd.Parameters.AddWithValue("@latMax", latMax);
                 oCmd.Parameters.AddWithValue("@longMin", longMin);
                 oCmd.Parameters.AddWithValue("@longMax", longMax);
                 oCmd.Parameters.AddWithValue("@inOrOut", inOrOut);
                 oCmd.Parameters.AddWithValue("@statePrivacy", statePrivacy);
-                oCmd.Parameters.AddWithValue("@pollutantName", pollutantName);
+                //oCmd.Parameters.AddWithValue("@pollutantName", pollutantName);
                 //oCmd.Parameters.AddWithValue("@deviceID", "12-34-56-78-9A-BC");
 
                 myConnection.Open();
@@ -564,12 +697,26 @@ namespace server_api.Controllers
             public DeviceState state {get; set;}
         }
 
+        /*
         public class MapParameters
         {
             public int latMin {get; set;}
             public int latMax {get; set;}
             public int longMin {get; set;}
             public int longMax {get; set;}
+        }
+        */
+
+        public class MapParameters
+        {
+            public Coordinate northEast { get; set; }
+            public Coordinate southWest { get; set; }
+        }
+
+        public class Coordinate
+        {
+            public decimal lat { get; set; }
+            public decimal lng { get; set; }
         }
 
         public class HeatMapParamters
