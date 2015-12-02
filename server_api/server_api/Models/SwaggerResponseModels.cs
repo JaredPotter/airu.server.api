@@ -33,4 +33,39 @@ namespace server_api.Models
             
         }
     }
+
+    public class SwaggerAMSList
+    {
+        public List<SwaggerDevice> ams;
+
+        public SwaggerAMSList()
+        {
+            this.ams = new List<SwaggerDevice>();
+        }
+
+        public void AddSwaggerDevice(String deviceID, decimal lat, decimal lng)
+        {
+            ams.Add(new SwaggerDevice(deviceID, lat, lng));
+        }
+
+
+        public class SwaggerDevice
+        {
+            public String deviceID { get; set; }
+            public decimal lat { get; set; }
+            public decimal lng { get; set; }
+
+            public SwaggerDevice(String deviceID, decimal lat, decimal lng)
+            {
+                this.deviceID = deviceID;
+                this.lat = lat;
+                this.lng = lng;
+            }
+
+        }
+
+        
+    }
+
+
 }

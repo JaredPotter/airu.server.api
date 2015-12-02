@@ -34,6 +34,14 @@ namespace server_api.Controllers
         {
             var message = Request.CreateResponse(HttpStatusCode.OK);
             message.Content = new StringContent("Success");
+
+            SwaggerAMSList test = new SwaggerAMSList();
+            test.AddSwaggerDevice("device1", 1, 2);
+            test.AddSwaggerDevice("device2", 3, 4);
+            test.AddSwaggerDevice("device3", 5, 6);
+
+            string json = JsonConvert.SerializeObject(test);
+            message.Content = new StringContent(json);
             return message;
         }
 
@@ -75,7 +83,7 @@ namespace server_api.Controllers
         /// <param name="deviceID"></param>
         /// <returns></returns>
         [ResponseType(typeof(IEnumerable<SwaggerPollutantList>))]
-        [Route("frontend/AMSDataPointsPoints")]
+        [Route("frontend/AMSDataPoints")]
         [HttpPost]
         public HttpResponseMessage GetAllDataPointsForAMS([FromBody]string deviceID)
         {
@@ -455,15 +463,8 @@ namespace server_api.Controllers
             decimal longMin = para.southWest.lng;
             decimal longMax = para.northEast.lng;
 
-            // CURRENTLY NOT USED
-            /*
-            String deviceID = "12-34-56-78-9A-BC";
-            DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
-            */
-
-            //SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Zach\Documents\AirU.mdf;Integrated Security=True;Connect Timeout=30");
             SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-            //SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;PASSWORD=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+            
 
             using (SqlConnection myConnection = conn)
             {
@@ -526,26 +527,17 @@ namespace server_api.Controllers
                 }
              * 
              */
-            StringBuilder msg = new StringBuilder();
 
-            msg.Append("{ \"ams\": [");
+            SwaggerAMSList amses = new SwaggerAMSList();
 
             foreach (Devices_States_and_Datapoints ams in results)
             {
-                msg.Append("{\"deviceID\": \"");
-                msg.Append(ams.DeviceID);
-                msg.Append("\", \"lat\": ");
-                msg.Append(ams.Lat);
-                msg.Append(", \"lng\": ");
-                msg.Append(ams.Long);
-                msg.Append("}, ");
+                amses.AddSwaggerDevice(ams.DeviceID, (decimal)ams.Lat, (decimal)ams.Long);
             }
-            msg.Remove(msg.Length - 2, 2);
-            msg.Append("]}");
 
             var message = Request.CreateResponse(HttpStatusCode.OK);
-
-            message.Content = new StringContent(msg.ToString());
+            string json = JsonConvert.SerializeObject(amses);
+            message.Content = new StringContent(json);
 
             return message;
         }
