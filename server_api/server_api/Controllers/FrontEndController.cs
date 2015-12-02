@@ -34,14 +34,6 @@ namespace server_api.Controllers
         {
             var message = Request.CreateResponse(HttpStatusCode.OK);
             message.Content = new StringContent("Success");
-
-            SwaggerAMSList test = new SwaggerAMSList();
-            test.AddSwaggerDevice("device1", 1, 2);
-            test.AddSwaggerDevice("device2", 3, 4);
-            test.AddSwaggerDevice("device3", 5, 6);
-
-            string json = JsonConvert.SerializeObject(test);
-            message.Content = new StringContent(json);
             return message;
         }
 
@@ -87,7 +79,6 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage GetAllDataPointsForAMS([FromBody]string deviceID)
         {
-            // Does not actually pull in the deviceID
             var db = new AirUDatabaseCOE();
             List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
 
@@ -139,7 +130,6 @@ namespace server_api.Controllers
         [HttpGet]
         public HttpResponseMessage GetRegisteredUser([FromBody]string email)
         {
-            //var db = new AirU_Database_Entity();
             var db = new AirUDatabaseCOE();
 
             User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
@@ -450,66 +440,36 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage GetAllAMSDevicesInMapRange([FromBody]MapParameters para)
         {
-            LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
-
-            // DEFAULT VALUES
-            DateTime measurementTimeMax = DateTime.Now;
-            int inOrOut = 0; // 0 = Outside, 1 = Inside
-            int statePrivacy = 0; // 0 = Not Private, 1 = Private
-
             // SHOULD BE VARIABLE
             decimal latMin = para.southWest.lat;
             decimal latMax = para.northEast.lat;
             decimal longMin = para.southWest.lng;
             decimal longMax = para.northEast.lng;
 
-            SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+            var db = new AirUDatabaseCOE();
+
+            var results = from state in db.DeviceStates
+                          where
+                          state.Lat > latMin
+                          && state.Lat < latMax
+                          && state.Long > longMin
+                          && state.Long < longMax
+                          && state.StatePrivacy == false // Can create add in Spring
+                          && state.InOrOut == false // Can create add in Spring
+                          group state by state.DeviceID into deviceIDGroup
+                          select new
+                          {
+                              MaxStateTime = deviceIDGroup.Max(device => device.StateTime)
+                          } into MaxStates
+                          join coordinates in db.DeviceStates
+                          on MaxStates.MaxStateTime equals coordinates.StateTime into latestStateGroup
+                          select latestStateGroup.FirstOrDefault();
 
             SwaggerAMSList amses = new SwaggerAMSList();
 
-            using (SqlConnection myConnection = conn)
+            foreach (DeviceState d in results)
             {
-                string oString = @"select MaxState.DeviceID, MaxState.StateTime, DeviceStates.Lat, DeviceStates.Long
-                                    from 
-                                    (
-	                                    select DeviceID, max(StateTime) as StateTime
-	                                    from Devices_States_and_Datapoints
-	                                    where 
-	                                    Lat >= @latMin
-                                        and Lat < @latMax
-                                        and Long >= @longMin
-                                        and Long < @longMax
-                                        and InOrOut = @inOrOut
-                                        and StatePrivacy = @statePrivacy
-	                                    group by DeviceID
-                                    ) as MaxState
-                                    left join DeviceStates
-                                    on MaxState.DeviceID=DeviceStates.DeviceID
-                                    and MaxState.StateTime=DeviceStates.StateTime;";
-                SqlCommand oCmd = new SqlCommand(oString, myConnection);
-
-                String time = DateTime.Now.ToString("G");
-                oCmd.Parameters.AddWithValue("@latMin", latMin);
-                oCmd.Parameters.AddWithValue("@latMax", latMax);
-                oCmd.Parameters.AddWithValue("@longMin", longMin);
-                oCmd.Parameters.AddWithValue("@longMax", longMax);
-                oCmd.Parameters.AddWithValue("@inOrOut", inOrOut);
-                oCmd.Parameters.AddWithValue("@statePrivacy", statePrivacy);
-
-                myConnection.Open();
-                using (SqlDataReader oReader = oCmd.ExecuteReader())
-                {
-                    while (oReader.Read())
-                    {
-                        amses.AddSwaggerDevice(
-                            oReader["DeviceID"].ToString(), 
-                            (decimal)oReader["Lat"],
-                            (decimal)oReader["Long"]
-                        );
-                    }
-
-                    myConnection.Close();
-                }
+                amses.AddSwaggerDevice(d.DeviceID, d.Lat, d.Long);
             }
 
             var message = Request.CreateResponse(HttpStatusCode.OK);
