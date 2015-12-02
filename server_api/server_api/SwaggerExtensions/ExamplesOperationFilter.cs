@@ -9,8 +9,9 @@ using System.Web.Http.Description;
 
 namespace server_api.SwaggerExtensions
 {
-    public class ExamplesOperationFilter : IOperationFilter
+    public class ExamplesOperationFilter
     {
+        /*
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
         //    var responseAttributes = apiDescription.GetControllerAndActionAttributes<server_api.SwaggerConfig.SwaggerResponseExamplesAttribute>();
@@ -58,5 +59,6 @@ namespace server_api.SwaggerExtensions
         //    var jsonString = JsonConvert.SerializeObject(examples, new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         //    return JsonConvert.DeserializeObject(jsonString);
         }
+        */
     }
 }
