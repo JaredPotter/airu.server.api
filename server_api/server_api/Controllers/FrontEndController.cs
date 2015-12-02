@@ -464,7 +464,8 @@ namespace server_api.Controllers
             decimal longMax = para.northEast.lng;
 
             SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-            
+
+            SwaggerAMSList amses = new SwaggerAMSList();
 
             using (SqlConnection myConnection = conn)
             {
@@ -500,39 +501,15 @@ namespace server_api.Controllers
                 {
                     while (oReader.Read())
                     {
-                        Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
-                        result.DeviceID = oReader["DeviceID"].ToString();
-                        result.StateTime = (DateTime)oReader["StateTime"];
-                        result.Lat = (decimal)oReader["Lat"];
-                        result.Long = (decimal)oReader["Long"];
-                        results.AddLast(result);
+                        amses.AddSwaggerDevice(
+                            oReader["DeviceID"].ToString(), 
+                            (decimal)oReader["Lat"],
+                            (decimal)oReader["Long"]
+                        );
                     }
 
                     myConnection.Close();
                 }
-            }
-
-            /*
-             * 
-               {
-                    "ams": [{
-                        "deviceID": "mac_addr",
-                        "lat": 40,
-                        "lng": -111
-                    }, {
-                        "deviceID": "mac_addr",
-                        "lat": 40,
-                        "lng": -111
-                    }]
-                }
-             * 
-             */
-
-            SwaggerAMSList amses = new SwaggerAMSList();
-
-            foreach (Devices_States_and_Datapoints ams in results)
-            {
-                amses.AddSwaggerDevice(ams.DeviceID, (decimal)ams.Lat, (decimal)ams.Long);
             }
 
             var message = Request.CreateResponse(HttpStatusCode.OK);

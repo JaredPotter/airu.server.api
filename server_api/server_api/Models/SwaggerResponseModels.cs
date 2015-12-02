@@ -34,6 +34,19 @@ namespace server_api.Models
         }
     }
 
+    /// <summary>
+    ///  {
+    ///  "ams": [{
+    ///               "deviceID": "mac_addr",
+    ///               "lat": 40,
+    ///               "lng": -111
+    ///           }, {
+    ///               "deviceID": "mac_addr",
+    ///               "lat": 40,
+    ///               "lng": -111
+    ///          }]
+    ///   }
+    /// </summary>
     public class SwaggerAMSList
     {
         public List<SwaggerDevice> ams;
