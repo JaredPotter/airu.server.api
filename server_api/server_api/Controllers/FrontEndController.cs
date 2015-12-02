@@ -278,19 +278,32 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        [Route("frontend/state")]
+        [Route("frontend/getAMSStatesForUser")]
         [HttpPost]
         public HttpResponseMessage GetAMSDeviceStates([FromBody]string email)
         {
             var db = new AirUDatabaseCOE();
+
+            DateTime hi = new DateTime(2015,12,24,7,47,7);
+
+            
 
             // Validate given email has associated User.
             User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
 
             if (registeredUser != null)
             {
-                // User with email address: <email> does exsit.
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "User with email address: = " + registeredUser.Email + " does exist.");
+                // Perform database query to retrive the most recent AMS DeviceStates for each AMS owned by User.
+                var deviceStates = from device in db.Devices
+                                   where device.Email == email
+                                   join state in db.DeviceStates
+                                   on device.DeviceID equals state.DeviceID
+                                   select state;
+
+                // TODO - Send user list of AMS DeviceState. 
+                // JsonConvert.SerializeObject(deviceStates) - does not work, circular reference
+
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "Item found!");
             }
             else
             {
@@ -299,10 +312,9 @@ namespace server_api.Controllers
             }
 
 
-            // Perform database query to retrive the most recent AMS DeviceStates for each AMS owned by User.
+            
 
-
-            // Send user list of AMS DeviceState. 
+            
 
             //var message = Request.CreateResponse(HttpStatusCode.OK);
             //return message;
@@ -320,17 +332,43 @@ namespace server_api.Controllers
             var db = new AirUDatabaseCOE();
             
             // Validate Device from given DeviceId exists.
+            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == state.DeviceID);
 
-            // Request previous state from database based on state.DeviceID.
+            if (registeredDevice != null)
+            {
+                // Request previous state from database based on state.DeviceID
+                DeviceState previousState = (from device in db.DeviceStates
+                                    where device.DeviceID == state.DeviceID
+                                    && device.StateTime <= state.StateTime // should be measurementtime
+                                    group device by device.DeviceID into deviceIDGroup
+                                    select new
+                                    {
+                                        DeviceID = deviceIDGroup.Key,
+                                        MaxMeasurementTime = deviceIDGroup.Max(device => device.StateTime)
+                                    } into MaxStates
+                                    join coordinates in db.DeviceStates
+                                                            on MaxStates.MaxMeasurementTime equals coordinates.StateTime into latestStateGroup
+                                    select latestStateGroup.FirstOrDefault()).Single();
 
-            // Inherit lat and long from previous state.
+                // Inherit lat and long from previous state
+                decimal prevLong= previousState.Long;
+                decimal prevLat = previousState.Lat;
+                
+                // TODO
+                // Save new state to database
 
-            // Save new state to database. 
+                // Send user newly updated state back to user
 
-            // Send user newly updated state back to user.
+                var message = Request.CreateResponse(HttpStatusCode.OK);
+                return message;
+            }
+            else
+            {
+                // Device with DeviceID: <deviceID> does not exist.
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+            }
 
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            return message;
+            
         }
 
         /// <summary>
