@@ -61,7 +61,7 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage AddAMSDataSet([FromBody]DataPoint[] dataSet)
         {
-            var db = new AirU_Database_Entity();
+            var db = new AirUDatabaseCOE();
 
             db.DataPoints.AddRange(dataSet);
 
@@ -83,9 +83,9 @@ namespace server_api.Controllers
         [HttpPost]
         public HttpResponseMessage UpdateAMSDeviceState([FromBody]DeviceState[] states)
         {
-            var db = new AirU_Database_Entity();
-
-            Device device = db.Devices.SingleOrDefault(x => x.DeviceID == states[0].DeviceID);
+            var db = new AirUDatabaseCOE();
+            string deviceID = states[0].DeviceID;
+            Device device = db.Devices.SingleOrDefault(x => x.DeviceID == deviceID);
 
             if (device == null)
             {
