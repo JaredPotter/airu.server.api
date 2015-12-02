@@ -20,6 +20,26 @@ namespace server_api.Controllers
     /// </summary>
     public class FrontEndController : ApiController
     {
+        /*
+         * // Testing Methods
+         * + ServerTest() - This method simply returns successful.
+         * + ServerAndDatabaseTest() - This method performs a database query and returns result.
+         * 
+         * // Map View
+         * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID.
+         * 
+         * // Heat Map View
+         * 
+         * 
+         * // Device Registration View
+         * 
+         * 
+         * // Device Compare View
+         * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID.
+         * 
+         * // Device Settings View
+         * 
+         */
 
         // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /// <summary>
@@ -30,7 +50,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/servertest")]
         [HttpGet]
-        public HttpResponseMessage ServerResponding()
+        public HttpResponseMessage ServerTest()
         {
             var message = Request.CreateResponse(HttpStatusCode.OK);
             message.Content = new StringContent("Success");
@@ -46,7 +66,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerUser>))]
         [Route("frontend/registeredUsers")]
         [HttpGet]
-        public HttpResponseMessage GetAllRegisteredUsers()
+        public HttpResponseMessage ServerAndDatabaseTest()
         {
             var db = new AirUDatabaseCOE();
 
@@ -68,16 +88,16 @@ namespace server_api.Controllers
         }
 
         /// <summary>
-        /// 
+        ///   Returns all datapoints for a Device given a DeviceID.
         /// 
         ///   Primary Use: Compare View and single AMS device Map View "data graph"
         /// </summary>
         /// <param name="deviceID"></param>
         /// <returns></returns>
         [ResponseType(typeof(IEnumerable<SwaggerPollutantList>))]
-        [Route("frontend/AMSDataPoints")]
+        [Route("frontend/deviceDatapoints")]
         [HttpPost]
-        public HttpResponseMessage GetAllDataPointsForAMS([FromBody]string deviceID)
+        public HttpResponseMessage GetAllDataPointsForDevice([FromBody]string deviceID)
         {
             var db = new AirUDatabaseCOE();
             List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
@@ -95,13 +115,13 @@ namespace server_api.Controllers
                                           select a;
 
                 /* MOVE ALTITUDE TO STATE */
-                if (amsDataForPollutant.Count() != 0 || p.PollutantName.Equals("Altitude"))
+                if (amsDataForPollutant.Count() != 0 && !p.PollutantName.Equals("Altitude"))
                 {
                     SwaggerPollutantList pl = new SwaggerPollutantList(p.PollutantName);
-                    pl.values.Add(new object[2]);
-
+                    
                     foreach (var item in amsDataForPollutant)
                     {
+                        pl.values.Add(new object[2]);
                         pl.values.Last()[0] = ConvertDateTimeToMilliseconds(item.MeasurementTime);
                         pl.values.Last()[1] = (decimal)item.Value;
 
@@ -117,51 +137,6 @@ namespace server_api.Controllers
             message.Content = new StringContent(json);
 
             return message;
-        }
-
-        /// <summary>
-        ///   This is a testing method.
-        ///   
-        ///   Returns user with the specific email address if it exists. Else, returns 'not found'.
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        [Route("frontend")]
-        [HttpGet]
-        public HttpResponseMessage GetRegisteredUser([FromBody]string email)
-        {
-            var db = new AirUDatabaseCOE();
-
-            User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
-
-            if (registeredUser != null)
-            {
-                // User with email address: <email> does exsit.
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "User with email address: = " + registeredUser.Email + " does exist.");
-            }
-            else
-            {
-                // User with email address: <email> does not exist.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        [Route("ams/AMSData")]
-        [HttpGet]
-        public HttpResponseMessage GetAMSData()
-        {
-            var db = new AirUDatabaseCOE();
-
-            // TODO: Add API database calls to retrive data and return to frontend.
-
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-
-            return message;
-
         }
 
         // ~~~~~ POST ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -284,10 +259,6 @@ namespace server_api.Controllers
         {
             var db = new AirUDatabaseCOE();
 
-            DateTime hi = new DateTime(2015,12,24,7,47,7);
-
-            
-
             // Validate given email has associated User.
             User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
 
@@ -310,14 +281,6 @@ namespace server_api.Controllers
                 // User with email address: <email> does not exist.
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
             }
-
-
-            
-
-            
-
-            //var message = Request.CreateResponse(HttpStatusCode.OK);
-            //return message;
         }
 
         /// <summary>
@@ -337,7 +300,8 @@ namespace server_api.Controllers
             if (registeredDevice != null)
             {
                 // Request previous state from database based on state.DeviceID
-                DeviceState previousState = (from device in db.DeviceStates
+                DeviceState previousState = (
+                                    from device in db.DeviceStates
                                     where device.DeviceID == state.DeviceID
                                     && device.StateTime <= state.StateTime // should be measurementtime
                                     group device by device.DeviceID into deviceIDGroup
@@ -367,8 +331,6 @@ namespace server_api.Controllers
                 // Device with DeviceID: <deviceID> does not exist.
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
             }
-
-            
         }
 
         /// <summary>
@@ -516,8 +478,7 @@ namespace server_api.Controllers
 
             return message;
         }
-
-
+        
         /// <summary>
         ///   Returns the AMS DeviceStates for all AMS devices within specified HeatMapParameters.
         ///   
