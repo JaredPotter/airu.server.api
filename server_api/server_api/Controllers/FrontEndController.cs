@@ -21,6 +21,9 @@ namespace server_api.Controllers
     public class FrontEndController : ApiController
     {
         /*
+         * + = Working as expected
+         * - = Needs work
+         * 
          * // Testing Methods
          * + ServerTest() - This method simply returns successful.
          * + ServerAndDatabaseTest() - This method performs a database query and returns result.
@@ -31,13 +34,21 @@ namespace server_api.Controllers
          * // Heat Map View
          * 
          * 
-         * // Device Registration View
-         * 
-         * 
          * // Device Compare View
          * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID.
          * 
+         * // Device Registration View
+         * + DeviceRegistration() - Registers an AMS device.
+         * 
          * // Device Settings View
+         * + GetUsersDeviceStates() - Returns the set of DeviceStates associated with the given user email.
+         * 
+         * // User Registration View
+         * + UserRegistration() - Validates user is not already in database and if not, creates new User in database.
+         * 
+         * // User Login View
+         * + UserLogin() - Validates user based on Email and Pass.
+         * 
          * 
          */
 
@@ -71,20 +82,25 @@ namespace server_api.Controllers
             var db = new AirUDatabaseCOE();
 
             List<User> allUsers = db.Users.Select(x => x).ToList<User>();
-            List<SwaggerUser> swaggerUsers = new List<SwaggerUser>();
 
-            foreach (var item in allUsers)
+            if(allUsers != null)
             {
-                swaggerUsers.Add(new SwaggerUser(item.Email));
+
+                List<SwaggerUser> swaggerUsers = new List<SwaggerUser>();
+
+                foreach (var item in allUsers)
+                {
+                    swaggerUsers.Add(new SwaggerUser(item.Email));
+                }
+
+                string json = JsonConvert.SerializeObject(swaggerUsers);
+
+                return Request.CreateResponse<string>(HttpStatusCode.OK, json);
             }
-
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-
-            string json = JsonConvert.SerializeObject(swaggerUsers);
-
-            message.Content = new StringContent(json);
-
-            return message;
+            else
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No users found!");
+            }
         }
 
         /// <summary>
@@ -142,19 +158,17 @@ namespace server_api.Controllers
         // ~~~~~ POST ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         /// <summary>
-        /// 
+        ///   Validates user is not already in database and if not, creates new User in database.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        [Route("frontend/register")]
+        [Route("frontend/registerUser")]
         [HttpPost]
         public HttpResponseMessage UserRegistration([FromBody]User user)
         {
             var db = new AirUDatabaseCOE();
 
             User existingUser = db.Users.SingleOrDefault(x => x.Email == user.Email);
-
-            var message = Request.CreateResponse(HttpStatusCode.OK);
 
             if (existingUser == null)
             {
@@ -167,19 +181,19 @@ namespace server_api.Controllers
                 db.SaveChanges();
 
                 // Account register success.
-                message.Content = new StringContent("Account registration successful! Welcome, " + user.Email);
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "Account registration successful! Welcome, " + user.Email);
             }
             else
             {
                 // Account register failed. Account with email address: '<user.Email>' already exists. Please try a different email address.
-                message.Content = new StringContent("Account registration failed! Account with email address: " + user.Email + " already exists. Please try a different email address.");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Account registration failed! Account with email address: " + 
+                                                                             user.Email + 
+                                                                             " already exists. Please try a different email address.");
             }
-
-            return message;
         }
 
         /// <summary>
-        /// 
+        ///   Validates user based on Email and Pass.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
@@ -191,20 +205,16 @@ namespace server_api.Controllers
 
             User validUserAndPass = db.Users.SingleOrDefault(x => x.Email == user.Email && x.Pass == user.Pass);
 
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-
             if (validUserAndPass != null)
             {
                 // Login success.
-                message.Content = new StringContent("Login Successful! Welcome, " + user.Email);
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "Login Successful! Welcome, " + user.Email);
             }
             else
             {
                 // Login fail.
-                message.Content = new StringContent("Login failed! Please check email and password.");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Login failed! Please check email and password.");
             }
-
-            return message;
         }
 
         /// <summary>
@@ -215,15 +225,13 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="newDeviceAndState">The current Device and its DeviceState</param>
         /// <returns></returns>
-        [Route("ams/add")]
+        [Route("frontend/registerDevice")]
         [HttpPost]
-        public HttpResponseMessage AddAMSDevice([FromBody]DeviceAndState newDeviceAndState)
+        public HttpResponseMessage DeviceRegistration([FromBody]DeviceAndState newDeviceAndState)
         {
             var db = new AirUDatabaseCOE();
 
             Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceAndState.device.DeviceID);
-
-            var message = Request.CreateResponse(HttpStatusCode.OK);
 
             if (existingDevice != null)
             {
@@ -233,29 +241,30 @@ namespace server_api.Controllers
                 newDeviceAndState.state.Long = 360.0m;
                 newDeviceAndState.state.Lat = 360.0m;
                 db.DeviceStates.Add(newDeviceAndState.state);
-                message.Content = new StringContent("Successfully added device: \n\tDeviceID = " + newDeviceAndState.device.DeviceID +
-                                                                               "\n\tDevicePrivacy = " + newDeviceAndState.device.DevicePrivacy +
-                                                                               "\n\tEmail = " + newDeviceAndState.device.Email);
+                db.SaveChanges();
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "Successfully added device: \n\tDeviceID = " + 
+                                                                         newDeviceAndState.device.DeviceID +
+                                                                         "\n\tDevicePrivacy = " + newDeviceAndState.device.DevicePrivacy +
+                                                                         "\n\tEmail = " + newDeviceAndState.device.Email);
+                
             }
             else
             {
                 // Add device fail.
-                message.Content = new StringContent("Adding device with DeviceID = " + newDeviceAndState.device.DeviceID + " was unsuccessful!");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Adding device with DeviceID = " + 
+                                                                            newDeviceAndState.device.DeviceID + 
+                                                                            " was unsuccessful!");
             }
-
-            db.SaveChanges();
-
-            return message;
         }
 
         /// <summary>
-        ///   Returns the set of DeviceStates associated with the given email.
+        ///   Returns the set of DeviceStates associated with the given user email.
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        [Route("frontend/getAMSStatesForUser")]
+        [Route("frontend/getUsersDeviceStates")]
         [HttpPost]
-        public HttpResponseMessage GetAMSDeviceStates([FromBody]string email)
+        public HttpResponseMessage GetUsersDeviceStates([FromBody]string email)
         {
             var db = new AirUDatabaseCOE();
 
