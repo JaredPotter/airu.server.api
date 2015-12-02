@@ -8,6 +8,9 @@ using System.Net.Http;
 using System.Text;
 using System.Web;
 using System.Web.Http;
+using Swashbuckle.Swagger.Annotations;
+using System.Web.Http.Description;
+using server_api.Models;
 
 
 namespace server_api.Controllers
@@ -40,21 +43,28 @@ namespace server_api.Controllers
         ///   This method returns all registered users' email addresses.
         /// </summary>
         /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<SwaggerUser>))]
         [Route("frontend/registeredUsers")]
         [HttpGet]
-        public IEnumerable<string> GetAllRegisteredUsers()
+        public HttpResponseMessage GetAllRegisteredUsers()
         {
             var db = new AirUDatabaseCOE();
 
             List<User> allUsers = db.Users.Select(x => x).ToList<User>();
-            List<string> allUsersString = new List<string>();
- 
-            foreach(var item in allUsers)
+            List<SwaggerUser> swaggerUsers = new List<SwaggerUser>();
+
+            foreach (var item in allUsers)
             {
-                allUsersString.Add(item.Email);
+                swaggerUsers.Add(new SwaggerUser(item.Email));
             }
 
-            return allUsersString;
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+
+            string json = JsonConvert.SerializeObject(swaggerUsers);
+
+            message.Content = new StringContent(json);
+
+            return message;
         }
 
         /// <summary>
@@ -64,6 +74,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="deviceID"></param>
         /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<SwaggerPollutantList>))]
         [Route("frontend/AMSDataPointsPoints")]
         [HttpPost]
         public HttpResponseMessage GetAllDataPointsForAMS([FromBody]string deviceID)
@@ -72,16 +83,12 @@ namespace server_api.Controllers
             var db = new AirUDatabaseCOE();
             List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
 
-            string pName = pollutants[0].PollutantName;
-
-            AMSPollutantsData dataPoints = new AMSPollutantsData();
-
+            List<SwaggerPollutantList> data = new List<SwaggerPollutantList>();
+            
             StringBuilder msg = new StringBuilder();
-            msg.Append("[");
 
             foreach (Pollutant p in pollutants)
             {
-                
                 var amsDataForPollutant = from a in db.Devices_States_and_Datapoints
                                           where a.DeviceID == deviceID
                                           && a.PollutantName == p.PollutantName
@@ -91,42 +98,24 @@ namespace server_api.Controllers
                 /* MOVE ALTITUDE TO STATE */
                 if (amsDataForPollutant.Count() != 0 || p.PollutantName.Equals("Altitude"))
                 {
-                    msg.Append("{\"key\": \"");
-                    msg.Append(p.PollutantName);
-                    msg.Append("\", \"values\": [");
-
-                    PollutantDataSet curPollutantDPs = new PollutantDataSet(p.PollutantName);
-
-
+                    SwaggerPollutantList pl = new SwaggerPollutantList(p.PollutantName);
+                    pl.values.Add(new object[2]);
 
                     foreach (var item in amsDataForPollutant)
                     {
-                        msg.Append("[");
-                        msg.Append(ConvertDateTimeToMilliseconds(item.MeasurementTime));
-                        msg.Append(", ");
-                        msg.Append(item.Value);
+                        pl.values.Last()[0] = ConvertDateTimeToMilliseconds(item.MeasurementTime);
+                        pl.values.Last()[1] = (decimal)item.Value;
 
-                        curPollutantDPs.AddValue(item.MeasurementTime, item.Value);
-
-                        msg.Append("], ");
                     }
-
-                    msg.Remove(msg.Length - 2, 2);
-
-                    msg.Append("]}, ");
-
-                    //msg.ToString().Substring(0, msg.Length - 2);
-                    dataPoints.pollutantList.Add(curPollutantDPs);
+                    data.Add(pl);
                 }
-                
             }
 
-            msg.Remove(msg.Length - 2, 2);
-            msg.Append("]");
+            string json = JsonConvert.SerializeObject(data);
 
             var message = Request.CreateResponse(HttpStatusCode.OK);
 
-            message.Content = new StringContent(msg.ToString());
+            message.Content = new StringContent(json);
 
             return message;
         }
@@ -790,16 +779,22 @@ namespace server_api.Controllers
         public class AMSPollutantsData
         {
             /// <summary>
+            /// 
+            /// </summary>
+            public string key {get; set;}
+
+            /// <summary>
             /// List of PollutantDataSets for AMS
             /// </summary>
-            public List<PollutantDataSet> pollutantList {get; set;}
+            public List<PollutantDataSet> values {get; set;}
 
             /// <summary>
             /// Constructor - Initializes the AMS PollutantsData
             /// </summary>
-            public AMSPollutantsData()
+            public AMSPollutantsData(string pollutant)
             {
-                pollutantList = new List<PollutantDataSet>();
+                key = pollutant;
+                values = new List<PollutantDataSet>();
             }
         }
 
