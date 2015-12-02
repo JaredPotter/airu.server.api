@@ -9,7 +9,7 @@ using System.Web.Http.Description;
 
 namespace server_api.SwaggerExtensions
 {
-    public class ExamplesOperationFilter
+    public class ExamplesOperationFilter //: IOperationFilter
     {
         /*
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
