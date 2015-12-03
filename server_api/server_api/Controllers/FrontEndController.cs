@@ -445,6 +445,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="para">The NE and SW bounds of a map</param>
         /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<SwaggerAMSList>))]
         [Route("ams/map")]
         [HttpPost]
         public HttpResponseMessage GetAllAMSDevicesInMapRange([FromBody]MapParameters para)
@@ -518,9 +519,9 @@ namespace server_api.Controllers
             DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
             */
 
-            //SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Zach\Documents\AirU.mdf;Integrated Security=True;Connect Timeout=30");
+            
             SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-            //SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;PASSWORD=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+            
 
             using (SqlConnection myConnection = conn)
             {
@@ -592,20 +593,87 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="DeviceID"></param>
         /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<SwaggerLatestPollutantsList>))]
         [Route("frontend/singleLatest")]
         [HttpPost]
-        public HttpResponseMessage GetLatestDataFromSingleAMSDevice([FromBody]string DeviceID)
+        public HttpResponseMessage GetLatestDataFromSingleAMSDevice([FromBody]string deviceID)
         {
             var db = new AirUDatabaseCOE();
 
             // Validate DeviceID represents an actual AMS device.
+            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == deviceID);
+            if (registeredDevice != null)
+            {
+                // Performs database query to obtain the latest Datapoints for specific DeviceID.
+                SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+                LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
+                using (SqlConnection myConnection = conn)
+                {
+                    string oString =   @"select Devices_States_and_DataPoints.DeviceID,
+		                                        Devices_States_and_DataPoints.StateTime,
+		                                        Devices_States_and_DataPoints.MeasurementTime,
+		                                        Devices_States_and_DataPoints.Lat,
+		                                        Devices_States_and_DataPoints.Long,
+		                                        Devices_States_and_DataPoints.InOrOut,
+		                                        Devices_States_and_DataPoints.StatePrivacy,
+		                                        Devices_States_and_DataPoints.Value,
+		                                        Devices_States_and_DataPoints.PollutantName
+                                        from(select DeviceID, Max(MeasurementTime) as MaxMeasurementTime, PollutantName
+	                                        from (select MaxStates.DeviceID, MaxStates.MaxStateTime, MeasurementTime, PollutantName
+			                                        from (select DeviceID, Max(StateTime) as MaxStateTime
+					                                        from DeviceStates
+					                                        where DeviceID=@deviceID
+					                                        group by DeviceID) as MaxStates
+			                                        left join Devices_States_and_DataPoints
+			                                        on MaxStates.DeviceID = Devices_States_and_DataPoints.DeviceID
+			                                        and MaxStates.MaxStateTime = Devices_States_and_DataPoints.StateTime) as MaxStatesAndMeasurementTime
+	                                        group by DeviceID, PollutantName) as MaxMeasurementTimeForPollutants
+                                        left join Devices_States_and_DataPoints
+			                                        on MaxMeasurementTimeForPollutants.DeviceID = Devices_States_and_DataPoints.DeviceID
+			                                        and MaxMeasurementTimeForPollutants.PollutantName = Devices_States_and_DataPoints.PollutantName
+			                                        and MaxMeasurementTimeForPollutants.MaxMeasurementTime = Devices_States_and_DataPoints.MeasurementTime";
+                    SqlCommand oCmd = new SqlCommand(oString, myConnection);
+                    oCmd.Parameters.AddWithValue("@deviceID", deviceID);
+                    
+                    myConnection.Open();
+                    using (SqlDataReader oReader = oCmd.ExecuteReader())
+                    {
+                        while (oReader.Read())
+                        {
+                            Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
+                            result.DeviceID = oReader["DeviceID"].ToString();
+                            result.StateTime = (DateTime)oReader["StateTime"];
+                            result.MeasurementTime = (DateTime)oReader["MeasurementTime"];
+                            result.Lat = (decimal)oReader["Lat"];
+                            result.Long = (decimal)oReader["Long"];
+                            result.InOrOut = (bool)oReader["InOrOut"];
+                            result.StatePrivacy = (bool)oReader["StatePrivacy"];
+                            result.Value = (double)oReader["Value"];
+                            result.PollutantName = oReader["PollutantName"].ToString();
+                            results.AddLast(result);
+                        }
+                        myConnection.Close();
+                    }
+                }
 
-            // Performs database query to obtain the latest Datapoints for specific DeviceID.
+                SwaggerLatestPollutantsList latestPollutants = new SwaggerLatestPollutantsList();
 
-            // Send user the latest datapoints. 
+                foreach (Devices_States_and_Datapoints result in results)
+                {
+                    latestPollutants.AddPollutantAndValue(result.PollutantName, result.Value);
+                }
 
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            return message;
+                string json = JsonConvert.SerializeObject(latestPollutants);
+                var message = Request.CreateResponse(HttpStatusCode.OK);
+                message.Content = new StringContent(json);
+                return message;
+            }
+            else
+            {
+                // Device with DeviceID: <deviceID> does not exist.
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+            }
+
         }
 
         /// <summary>
