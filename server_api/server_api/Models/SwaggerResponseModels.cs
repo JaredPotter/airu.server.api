@@ -80,18 +80,48 @@ namespace server_api.Models
         }
     }
 
+    public class SwaggerHeatMapValueList
+    {
+        public string pollutant { get; set; }
+        public List<SwaggerCoordinateAndValue> values;
+
+        public SwaggerHeatMapValueList(string pollutant)
+        {
+            this.pollutant = pollutant;
+            values = new List<SwaggerCoordinateAndValue>();
+        }
+
+        public void AddSwaggerCoordinateAndValue(decimal lat, decimal lng, double value)
+        {
+            values.Add(new SwaggerCoordinateAndValue(lat, lng, value));
+        }
+
+
+        public class SwaggerCoordinateAndValue
+        {
+            public decimal lat { get; set; }
+            public decimal lng { get; set; }
+            public double value { get; set; }
+
+            public SwaggerCoordinateAndValue(decimal lat, decimal lng, double value)
+            {
+                this.lat = lat;
+                this.lng = lng;
+                this.value = value;
+            }
+        }
+    }
+
     /// <summary>
-    ///  Used to return Device locations on the map view.
+    ///  Used to return values to the details pane.
     /// 
     ///  {
     ///  "latest": [{
-    ///               "deviceID": "mac_addr",
-    ///               "lat": 40,
-    ///               "lng": -111
+    ///               "pollutantName": "pName",
+    ///               "value": 40
     ///              }, {
-    ///               "deviceID": "mac_addr",
-    ///               "lat": 40,
-    ///               "lng": -111
+    ///               "pollutantNAme": "pName",
+    ///               "value": 40,
     ///             }]
     ///   }
     /// </summary>
