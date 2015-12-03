@@ -35,17 +35,19 @@ namespace server_api.Models
     }
 
     /// <summary>
-    ///  {
-    ///  "ams": [{
+    ///   Used to return Device locations on the map view.
+    /// 
+    ///   {
+    ///   "ams": [{
     ///               "deviceID": "mac_addr",
     ///               "lat": 40,
     ///               "lng": -111
-    ///           }, {
+    ///            }, {
     ///               "deviceID": "mac_addr",
     ///               "lat": 40,
     ///               "lng": -111
-    ///          }]
-    ///   }
+    ///           }]
+    ///    }
     /// </summary>
     public class SwaggerAMSList
     {
@@ -76,9 +78,50 @@ namespace server_api.Models
             }
 
         }
-
-        
     }
 
+    /// <summary>
+    ///  Used to return Device locations on the map view.
+    /// 
+    ///  {
+    ///  "latest": [{
+    ///               "deviceID": "mac_addr",
+    ///               "lat": 40,
+    ///               "lng": -111
+    ///              }, {
+    ///               "deviceID": "mac_addr",
+    ///               "lat": 40,
+    ///               "lng": -111
+    ///             }]
+    ///   }
+    /// </summary>
+    public class SwaggerLatestPollutantsList
+    {
+        public List<PollutantAndValue> latest;
+
+        public SwaggerLatestPollutantsList()
+        {
+            this.latest = new List<PollutantAndValue>();
+        }
+
+        public void AddPollutantAndValue(String pollutantName, double value)
+        {
+            latest.Add(new PollutantAndValue(pollutantName, value));
+        }
+
+
+        public class PollutantAndValue
+        {
+            public String pollutantName { get; set; }
+            public double value { get; set; }
+
+            public PollutantAndValue(String pollutantName, double value)
+            {
+                this.pollutantName = pollutantName;
+                this.value = value;
+            }
+
+        }
+    }
 
 }
