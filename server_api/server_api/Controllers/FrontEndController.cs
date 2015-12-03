@@ -69,6 +69,22 @@ namespace server_api.Controllers
             return Ok("Success");
         }
 
+        // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /// <summary>
+        ///   This is a testing method. 
+        ///   
+        ///   This method simply returns successful.
+        /// </summary>
+        /// <returns></returns>
+        [Route("frontend/servertestpost")]
+        [HttpPost]
+        public HttpResponseMessage ServerTestPost([FromBody]string name)
+        {
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+            message.Content = new StringContent("Success: " + name);
+            return message;
+        }
+
         /// <summary>
         ///   This is a testing method. 
         ///   
