@@ -64,10 +64,26 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/servertest")]
         [HttpGet]
-        public HttpResponseMessage ServerTest()
+        public HttpResponseMessage ServerTestGet()
         {
             var message = Request.CreateResponse(HttpStatusCode.OK);
             message.Content = new StringContent("Success");
+            return message;
+        }
+
+        // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /// <summary>
+        ///   This is a testing method. 
+        ///   
+        ///   This method simply returns successful.
+        /// </summary>
+        /// <returns></returns>
+        [Route("frontend/servertestpost")]
+        [HttpPost]
+        public HttpResponseMessage ServerTestPost([FromBody]string name)
+        {
+            var message = Request.CreateResponse(HttpStatusCode.OK);
+            message.Content = new StringContent("Success: " + name);
             return message;
         }
 
