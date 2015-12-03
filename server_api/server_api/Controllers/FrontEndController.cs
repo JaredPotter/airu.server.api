@@ -64,11 +64,9 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/servertest")]
         [HttpGet]
-        public HttpResponseMessage ServerTest()
+        public IHttpActionResult ServerTest()
         {
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            message.Content = new StringContent("Success");
-            return message;
+            return Ok("Success");
         }
 
         /// <summary>
@@ -80,7 +78,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerUser>))]
         [Route("frontend/registeredUsers")]
         [HttpGet]
-        public HttpResponseMessage ServerAndDatabaseTest()
+        public IHttpActionResult ServerAndDatabaseTest()
         {
             var db = new AirUDatabaseCOE();
 
@@ -96,13 +94,11 @@ namespace server_api.Controllers
                     swaggerUsers.Add(new SwaggerUser(item.Email));
                 }
 
-                string json = JsonConvert.SerializeObject(swaggerUsers);
-
-                return Request.CreateResponse<string>(HttpStatusCode.OK, json);
+                return Ok(swaggerUsers);
             }
             else
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No users found!");
+                return NotFound();
             }
         }
 
@@ -116,7 +112,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerPollutantList>))]
         [Route("frontend/deviceDatapoints")]
         [HttpPost]
-        public HttpResponseMessage GetAllDataPointsForDevice([FromBody]string deviceID)
+        public IHttpActionResult GetAllDataPointsForDevice([FromBody]string deviceID)
         {
             var db = new AirUDatabaseCOE();
             List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
@@ -149,13 +145,7 @@ namespace server_api.Controllers
                 }
             }
 
-            string json = JsonConvert.SerializeObject(data);
-
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-
-            message.Content = new StringContent(json);
-
-            return message;
+            return Ok(data);
         }
 
         // ~~~~~ POST ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,7 +157,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/registerUser")]
         [HttpPost]
-        public HttpResponseMessage UserRegistration([FromBody]User user)
+        public IHttpActionResult UserRegistration([FromBody]User user)
         {
             var db = new AirUDatabaseCOE();
 
@@ -184,12 +174,12 @@ namespace server_api.Controllers
                 db.SaveChanges();
 
                 // Account register success.
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "Account registration successful! Welcome, " + user.Email);
+                return Ok("Account registration successful! Welcome, " + user.Email);
             }
             else
             {
                 // Account register failed. Account with email address: '<user.Email>' already exists. Please try a different email address.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Account registration failed! Account with email address: " + 
+                return BadRequest("Account registration failed! Account with email address: " + 
                                                                              user.Email + 
                                                                              " already exists. Please try a different email address.");
             }
@@ -202,7 +192,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/login")]
         [HttpPost]
-        public HttpResponseMessage UserLogin([FromBody]User user)
+        public IHttpActionResult UserLogin([FromBody]User user)
         {
             var db = new AirUDatabaseCOE();
 
@@ -211,12 +201,12 @@ namespace server_api.Controllers
             if (validUserAndPass != null)
             {
                 // Login success.
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "Login Successful! Welcome, " + user.Email);
+                return Ok("Login Successful! Welcome, " + user.Email);
             }
             else
             {
                 // Login fail.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Login failed! Please check email and password.");
+                return BadRequest("Login failed! Please check email and password.");
             }
         }
 
@@ -230,7 +220,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/registerDevice")]
         [HttpPost]
-        public HttpResponseMessage DeviceRegistration([FromBody]DeviceAndState newDeviceAndState)
+        public IHttpActionResult DeviceRegistration([FromBody]DeviceAndState newDeviceAndState)
         {
             var db = new AirUDatabaseCOE();
 
@@ -245,18 +235,13 @@ namespace server_api.Controllers
                 newDeviceAndState.state.Lat = 360.0m;
                 db.DeviceStates.Add(newDeviceAndState.state);
                 db.SaveChanges();
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "Successfully added device: \n\tDeviceID = " + 
-                                                                         newDeviceAndState.device.DeviceID +
-                                                                         "\n\tDevicePrivacy = " + newDeviceAndState.device.DevicePrivacy +
-                                                                         "\n\tEmail = " + newDeviceAndState.device.Email);
+                return Ok(newDeviceAndState);
                 
             }
             else
             {
                 // Add device fail.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Adding device with DeviceID = " + 
-                                                                            newDeviceAndState.device.DeviceID + 
-                                                                            " was unsuccessful!");
+                return BadRequest("Existing Device");
             }
         }
 
@@ -267,7 +252,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/getUsersDeviceStates")]
         [HttpPost]
-        public HttpResponseMessage GetUsersDeviceStates([FromBody]string email)
+        public IHttpActionResult GetUsersDeviceStates([FromBody]string email)
         {
             var db = new AirUDatabaseCOE();
 
@@ -286,12 +271,13 @@ namespace server_api.Controllers
                 // TODO - Send user list of AMS DeviceState. 
                 // JsonConvert.SerializeObject(deviceStates) - does not work, circular reference
 
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "Item found!");
+                return Ok(deviceStates);
+                //return Ok("Item Found!");
             }
             else
             {
                 // User with email address: <email> does not exist.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+                return NotFound();
             }
         }
 
@@ -302,7 +288,7 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/state")]
         [HttpPost]
-        public HttpResponseMessage UpdateDeviceState([FromBody]DeviceState state)
+        public IHttpActionResult UpdateDeviceState([FromBody]DeviceState state)
         {
             var db = new AirUDatabaseCOE();
             
@@ -335,13 +321,12 @@ namespace server_api.Controllers
 
                 // Send user newly updated state back to user
 
-                var message = Request.CreateResponse(HttpStatusCode.OK);
-                return message;
+                return Ok();
             }
             else
             {
                 // Device with DeviceID: <deviceID> does not exist.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+                return NotFound();
             }
         }
 
@@ -355,7 +340,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerAMSList>))]
         [Route("frontend/map")]
         [HttpPost]
-        public HttpResponseMessage GetAllDevicesInMapRange([FromBody]MapParameters para)
+        public IHttpActionResult GetAllDevicesInMapRange([FromBody]MapParameters para)
         {
             // SHOULD BE VARIABLE
             decimal latMin = para.southWest.lat;
@@ -389,11 +374,7 @@ namespace server_api.Controllers
                 amses.AddSwaggerDevice(d.DeviceID, d.Lat, d.Long);
             }
 
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            string json = JsonConvert.SerializeObject(amses);
-            message.Content = new StringContent(json);
-
-            return message;
+            return Ok(amses);
         }
         
         /// <summary>
@@ -406,7 +387,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerHeatMapValueList>))]
         [Route("frontend/heatmap")]
         [HttpPost]
-        public HttpResponseMessage GetLatestValuesForSpecifiedPollutantInMapRange([FromBody]HeatMapParameters para)
+        public IHttpActionResult GetLatestValuesForSpecifiedPollutantInMapRange([FromBody]HeatMapParameters para)
         {
             // DEFAULT VALUES
             DateTime measurementTimeMax = DateTime.Now;
@@ -483,10 +464,7 @@ namespace server_api.Controllers
                 }
             }
 
-            string json = JsonConvert.SerializeObject(pollutantCoordinatesAndValues);
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            message.Content = new StringContent(json);
-            return message;
+            return Ok(pollutantCoordinatesAndValues);
         }
 
         /// <summary>
@@ -494,12 +472,12 @@ namespace server_api.Controllers
         ///   
         ///   Primary Use: "details" panel on Map View after selecting AMS device on map. 
         /// </summary>
-        /// <param name="DeviceID"></param>
+        /// <param name="deviceID"></param>
         /// <returns></returns>
         [ResponseType(typeof(IEnumerable<SwaggerLatestPollutantsList>))]
         [Route("frontend/singleLatest")]
         [HttpPost]
-        public HttpResponseMessage GetLatestDataFromSingleAMSDevice([FromBody]string deviceID)
+        public IHttpActionResult GetLatestDataFromSingleAMSDevice([FromBody]string deviceID)
         {
             var db = new AirUDatabaseCOE();
 
@@ -549,15 +527,12 @@ namespace server_api.Controllers
                     }
                 }
 
-                string json = JsonConvert.SerializeObject(latestPollutants);
-                var message = Request.CreateResponse(HttpStatusCode.OK);
-                message.Content = new StringContent(json);
-                return message;
+                return Ok(latestPollutants);
             }
             else
             {
                 // Device with DeviceID: <deviceID> does not exist.
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+                return NotFound();
             }
 
         }
