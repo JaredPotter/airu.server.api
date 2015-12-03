@@ -24,32 +24,35 @@ namespace server_api.Controllers
          * + = Working as expected
          * - = Needs work
          * 
-         * // Testing Methods
+         * // Testing Methods (DONE)
          * + ServerTest() - This method simply returns successful.
          * + ServerAndDatabaseTest() - This method performs a database query and returns result.
          * 
-         * // Map View
-         * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID.
+         * // Map View (DONE)
+         * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID. (Line Chart)
+         * + GetLatestDataFromSingleAMSDevice() - Returns the latest datapoints for a single AMS device based on specified DeviceID. (Details Panel)
+         * + GetAllDevicesInMapRange() -  Returns the AMS DeviceStates for all AMS devices within specified MapParameters. (Map)
          * 
-         * // Heat Map View
+         * // Heat Map View (DONE)
+         * + GetAllDevicesInMapRange() -  Returns the AMS DeviceStates for all AMS devices within specified MapParameters. (Map)
+         * + GetLatestValuesForSpecifiedPollutantInMapRange - Returns the values of the pollutants within the specified map range. (HeatMap Layer)
          * 
+         * // Device Compare View (DONE)
+         * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID. (Compare Chart)
          * 
-         * // Device Compare View
-         * + GetAllDataPointsForDevice() - Returns all datapoints for a Device given a DeviceID.
-         * 
-         * // Device Registration View
+         * // Device Registration View (DONE)
          * + DeviceRegistration() - Registers an AMS device.
          * 
          * // Device Settings View
          * + GetUsersDeviceStates() - Returns the set of DeviceStates associated with the given user email.
+         * - UpdateDeviceState() - Updates a single AMS DeviceState from the "my devices" settings web page.
+         *   - Need output format
          * 
-         * // User Registration View
+         * // User Registration View (DONE)
          * + UserRegistration() - Validates user is not already in database and if not, creates new User in database.
          * 
-         * // User Login View
+         * // User Login View (DONE)
          * + UserLogin() - Validates user based on Email and Pass.
-         * 
-         * 
          */
 
         // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,13 +296,13 @@ namespace server_api.Controllers
         }
 
         /// <summary>
-        /// Updates a single AMS DeviceState from the "my devices" settings web page.
+        ///   Updates a single AMS DeviceState from the "my devices" settings web page.
         /// </summary>
         /// <param name="state">The state of the device</param>
         /// <returns></returns>
         [Route("frontend/state")]
         [HttpPost]
-        public HttpResponseMessage UpdateAMSDeviceState([FromBody]DeviceState state)
+        public HttpResponseMessage UpdateDeviceState([FromBody]DeviceState state)
         {
             var db = new AirUDatabaseCOE();
             
@@ -343,102 +346,6 @@ namespace server_api.Controllers
         }
 
         /// <summary>
-        ///   Returns the latest AMS Device States and Datapoints based on a specific min lat and long, and max lat and long. 
-        ///   
-        ///   Primary Use: Heatmap.
-        /// </summary>
-        /// <returns></returns>
-        [Route("ams/latest")]
-        [HttpPost]
-        public HttpResponseMessage GetLatestMapValues([FromBody]HeatMapParameters para)
-        {
-            LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
-
-            // DEFAULT VALUES
-            DateTime measurementTimeMax = DateTime.Now;
-            int inOrOut = 0; // 0 = Outside, 1 = Inside
-            int statePrivacy = 0; // 0 = Not Private, 1 = Private
-
-            // SHOULD BE VARIABLE
-            int latMin = -180;
-            int latMax = 180;
-            int longMin = -180;
-            int longMax = 180;
-            String pollutantName = "Temperature";
-
-            // CURRENTLY NOT USED
-            String deviceID = "12-34-56-78-9A-BC";
-            DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
-
-            //SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Zach\Documents\AirU.mdf;Integrated Security=True;Connect Timeout=30");
-            SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-            //SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;PASSWORD=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-
-            using (SqlConnection myConnection = conn)
-            {
-                string oString = @"select Devices_States_and_Datapoints.*
-                                    from
-                                    Devices_States_and_Datapoints
-                                    right join
-                                    (
-	                                    select DeviceID, max(MeasurementTime) as MeasurementTime
-	                                    from Devices_States_and_Datapoints
-	                                    where MeasurementTime < @measurementTimeMax
-	                                    and Lat >= @latMin
-	                                    and Lat <= @latMax
-	                                    and Long >= @longMin
-	                                    and Long < @longMax
-	                                    and InOrOut = @inOrOut
-	                                    and StatePrivacy = @statePrivacy
-	                                    and PollutantName = @pollutantName
-	                                    group by DeviceID
-                                    ) as LatestValues
-                                    on Devices_States_and_Datapoints.MeasurementTime=LatestValues.MeasurementTime
-                                    and Devices_States_and_Datapoints.DeviceID = LatestValues.DeviceID;";
-                SqlCommand oCmd = new SqlCommand(oString, myConnection);
-
-                String time = DateTime.Now.ToString("G");
-                oCmd.Parameters.AddWithValue("@deviceID", deviceID);
-                oCmd.Parameters.AddWithValue("@measurementTimeMax", measurementTimeMax);
-                oCmd.Parameters.AddWithValue("@measurementTimeMin", measurementTimeMin);
-                oCmd.Parameters.AddWithValue("@latMin", latMin);
-                oCmd.Parameters.AddWithValue("@latMax", latMax);
-                oCmd.Parameters.AddWithValue("@longMin", longMin);
-                oCmd.Parameters.AddWithValue("@longMax", longMax);
-                oCmd.Parameters.AddWithValue("@inOrOut", inOrOut);
-                oCmd.Parameters.AddWithValue("@statePrivacy", statePrivacy);
-                oCmd.Parameters.AddWithValue("@pollutantName", pollutantName);
-                //oCmd.Parameters.AddWithValue("@deviceID", "12-34-56-78-9A-BC");
-
-                myConnection.Open();
-                using (SqlDataReader oReader = oCmd.ExecuteReader())
-                {
-                    while (oReader.Read())
-                    {
-                        Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
-                        result.DeviceID = oReader["DeviceID"].ToString();
-                        result.StateTime = (DateTime)oReader["StateTime"];
-                        result.MeasurementTime = (DateTime)oReader["MeasurementTime"];
-                        result.Lat = (decimal)oReader["Lat"];
-                        result.Long = (decimal)oReader["Long"];
-                        result.InOrOut = (bool)oReader["InOrOut"];
-                        result.StatePrivacy = (bool)oReader["StatePrivacy"];
-                        result.Value = (double)oReader["Value"];
-                        result.PollutantName = oReader["PollutantName"].ToString();
-                        results.AddLast(result);
-                    }
-
-                    myConnection.Close();
-                }
-            }
-
-            Console.WriteLine("Hello");
-
-            var message = Request.CreateResponse(HttpStatusCode.OK);
-            return message;
-        }
-
-        /// <summary>
         ///   Returns the AMS DeviceStates for all AMS devices within specified MapParameters.
         ///   
         ///   Primary Use: Populate the Map View with AMS device icons. 
@@ -446,9 +353,9 @@ namespace server_api.Controllers
         /// <param name="para">The NE and SW bounds of a map</param>
         /// <returns></returns>
         [ResponseType(typeof(IEnumerable<SwaggerAMSList>))]
-        [Route("ams/map")]
+        [Route("frontend/map")]
         [HttpPost]
-        public HttpResponseMessage GetAllAMSDevicesInMapRange([FromBody]MapParameters para)
+        public HttpResponseMessage GetAllDevicesInMapRange([FromBody]MapParameters para)
         {
             // SHOULD BE VARIABLE
             decimal latMin = para.southWest.lat;
@@ -490,18 +397,17 @@ namespace server_api.Controllers
         }
         
         /// <summary>
-        ///   Returns the AMS DeviceStates for all AMS devices within specified HeatMapParameters.
+        ///   Returns the values of the pollutants within the specified map range.
         ///   
-        ///   Primary Use: Populate the HeatMap View with AMS device icons. 
+        ///   Primary Use: Populate the HeatMap View with values for a specified pollutant.
         /// </summary>
         /// <param name="para">The NE and SW bounds of a map and name of requested Pollutant</param>
         /// <returns></returns>
-        [Route("ams/heatmap")]
+        [ResponseType(typeof(IEnumerable<SwaggerHeatMapValueList>))]
+        [Route("frontend/heatmap")]
         [HttpPost]
-        public HttpResponseMessage GetAllAMSDeviceStatesInMapRange([FromBody]HeatMapParameters para)
+        public HttpResponseMessage GetLatestValuesForSpecifiedPollutantInMapRange([FromBody]HeatMapParameters para)
         {
-            LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
-
             // DEFAULT VALUES
             DateTime measurementTimeMax = DateTime.Now;
             int inOrOut = 0; // 0 = Outside, 1 = Inside
@@ -512,77 +418,74 @@ namespace server_api.Controllers
             decimal latMax = para.mapParameters.northEast.lat;
             decimal longMin = para.mapParameters.southWest.lng;
             decimal longMax = para.mapParameters.northEast.lng;
+            string pollutantName = para.pollutantName;
 
             // CURRENTLY NOT USED
             /*
             String deviceID = "12-34-56-78-9A-BC";
             DateTime measurementTimeMin = measurementTimeMax.AddHours(-12);
             */
-
             
             SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-            
+            SwaggerHeatMapValueList pollutantCoordinatesAndValues = new SwaggerHeatMapValueList(pollutantName);
 
             using (SqlConnection myConnection = conn)
             {
-                string oString = @"select Devices_States_and_Datapoints.*
-                                    from
-                                    Devices_States_and_Datapoints
-                                    right join
-                                    (
-	                                    select DeviceID, max(MeasurementTime) as MeasurementTime
-	                                    from Devices_States_and_Datapoints
-	                                    where MeasurementTime < @measurementTimeMax
-	                                    and Lat >= @latMin
-	                                    and Lat <= @latMax
-	                                    and Long >= @longMin
-	                                    and Long < @longMax
-	                                    and InOrOut = @inOrOut
-	                                    and StatePrivacy = @statePrivacy
-	                                    group by DeviceID
-                                    ) as LatestValues
-                                    on Devices_States_and_Datapoints.MeasurementTime=LatestValues.MeasurementTime
-                                    and Devices_States_and_Datapoints.DeviceID = LatestValues.DeviceID;";
+                string oString = @"select Devices_States_and_DataPoints.DeviceID,
+		                            Devices_States_and_DataPoints.StateTime,
+		                            Devices_States_and_DataPoints.MeasurementTime,
+		                            Devices_States_and_DataPoints.Lat,
+		                            Devices_States_and_DataPoints.Long,
+		                            Devices_States_and_DataPoints.InOrOut,
+		                            Devices_States_and_DataPoints.StatePrivacy,
+		                            Devices_States_and_DataPoints.Value,
+		                            Devices_States_and_DataPoints.PollutantName
+                            from(select DeviceID, Max(MeasurementTime) as MaxMeasurementTime, PollutantName
+	                            from (select MaxStates.DeviceID, MaxStates.MaxStateTime, MeasurementTime, PollutantName
+			                            from (select DeviceID, Max(StateTime) as MaxStateTime
+					                            from DeviceStates
+												where Lat > @latMin
+												and Lat < @latMax
+												and Long > @longMin
+												and Long < @longMax
+												and StatePrivacy=@statePrivacy
+												and InOrOut=@inOrOut
+					                            group by DeviceID) as MaxStates
+			                            left join Devices_States_and_DataPoints
+			                            on MaxStates.DeviceID = Devices_States_and_DataPoints.DeviceID
+			                            and MaxStates.MaxStateTime = Devices_States_and_DataPoints.StateTime) as MaxStatesAndMeasurementTime
+										where PollutantName=@pollutantName
+	                            group by DeviceID, PollutantName) as MaxMeasurementTimeForPollutants
+                            left join Devices_States_and_DataPoints
+			                            on MaxMeasurementTimeForPollutants.DeviceID = Devices_States_and_DataPoints.DeviceID
+			                            and MaxMeasurementTimeForPollutants.PollutantName = Devices_States_and_DataPoints.PollutantName
+			                            and MaxMeasurementTimeForPollutants.MaxMeasurementTime = Devices_States_and_DataPoints.MeasurementTime
+										order by DeviceID;";
                 SqlCommand oCmd = new SqlCommand(oString, myConnection);
 
-                String time = DateTime.Now.ToString("G");
-                //oCmd.Parameters.AddWithValue("@deviceID", deviceID);
-                oCmd.Parameters.AddWithValue("@measurementTimeMax", measurementTimeMax);
-                //oCmd.Parameters.AddWithValue("@measurementTimeMin", measurementTimeMin);
                 oCmd.Parameters.AddWithValue("@latMin", latMin);
                 oCmd.Parameters.AddWithValue("@latMax", latMax);
                 oCmd.Parameters.AddWithValue("@longMin", longMin);
                 oCmd.Parameters.AddWithValue("@longMax", longMax);
                 oCmd.Parameters.AddWithValue("@inOrOut", inOrOut);
                 oCmd.Parameters.AddWithValue("@statePrivacy", statePrivacy);
-                //oCmd.Parameters.AddWithValue("@pollutantName", pollutantName);
-                //oCmd.Parameters.AddWithValue("@deviceID", "12-34-56-78-9A-BC");
+                oCmd.Parameters.AddWithValue("@pollutantName", pollutantName);
 
                 myConnection.Open();
                 using (SqlDataReader oReader = oCmd.ExecuteReader())
                 {
                     while (oReader.Read())
                     {
-                        Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
-                        result.DeviceID = oReader["DeviceID"].ToString();
-                        result.StateTime = (DateTime)oReader["StateTime"];
-                        result.MeasurementTime = (DateTime)oReader["MeasurementTime"];
-                        result.Lat = (decimal)oReader["Lat"];
-                        result.Long = (decimal)oReader["Long"];
-                        result.InOrOut = (bool)oReader["InOrOut"];
-                        result.StatePrivacy = (bool)oReader["StatePrivacy"];
-                        result.Value = (double)oReader["Value"];
-                        result.PollutantName = oReader["PollutantName"].ToString();
-                        results.AddLast(result);
+                        pollutantCoordinatesAndValues.AddSwaggerCoordinateAndValue((decimal)oReader["Lat"], (decimal)oReader["Long"], (double)oReader["Value"]);
                     }
 
                     myConnection.Close();
                 }
             }
 
-            Console.WriteLine("Hello");
-
+            string json = JsonConvert.SerializeObject(pollutantCoordinatesAndValues);
             var message = Request.CreateResponse(HttpStatusCode.OK);
+            message.Content = new StringContent(json);
             return message;
         }
 
@@ -606,7 +509,7 @@ namespace server_api.Controllers
             {
                 // Performs database query to obtain the latest Datapoints for specific DeviceID.
                 SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
-                LinkedList<Devices_States_and_Datapoints> results = new LinkedList<Devices_States_and_Datapoints>();
+                SwaggerLatestPollutantsList latestPollutants = new SwaggerLatestPollutantsList();
                 using (SqlConnection myConnection = conn)
                 {
                     string oString =   @"select Devices_States_and_DataPoints.DeviceID,
@@ -640,27 +543,10 @@ namespace server_api.Controllers
                     {
                         while (oReader.Read())
                         {
-                            Devices_States_and_Datapoints result = new Devices_States_and_Datapoints();
-                            result.DeviceID = oReader["DeviceID"].ToString();
-                            result.StateTime = (DateTime)oReader["StateTime"];
-                            result.MeasurementTime = (DateTime)oReader["MeasurementTime"];
-                            result.Lat = (decimal)oReader["Lat"];
-                            result.Long = (decimal)oReader["Long"];
-                            result.InOrOut = (bool)oReader["InOrOut"];
-                            result.StatePrivacy = (bool)oReader["StatePrivacy"];
-                            result.Value = (double)oReader["Value"];
-                            result.PollutantName = oReader["PollutantName"].ToString();
-                            results.AddLast(result);
+                            latestPollutants.AddPollutantAndValue(oReader["PollutantName"].ToString(), (double)oReader["Value"]);
                         }
                         myConnection.Close();
                     }
-                }
-
-                SwaggerLatestPollutantsList latestPollutants = new SwaggerLatestPollutantsList();
-
-                foreach (Devices_States_and_Datapoints result in results)
-                {
-                    latestPollutants.AddPollutantAndValue(result.PollutantName, result.Value);
                 }
 
                 string json = JsonConvert.SerializeObject(latestPollutants);
@@ -676,6 +562,7 @@ namespace server_api.Controllers
 
         }
 
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -687,7 +574,7 @@ namespace server_api.Controllers
         {
 
         }
-
+        */
         /*
         ///// <summary>
         ///// 
