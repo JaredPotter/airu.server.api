@@ -13,24 +13,43 @@ namespace server_api.Areas.HelpPage.Controllers
     {
         private const string ErrorViewName = "Error";
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public HelpController()
             : this(GlobalConfiguration.Configuration)
         {
         }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <param name="config"></param>
         public HelpController(HttpConfiguration config)
         {
             Configuration = config;
         }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public HttpConfiguration Configuration { get; private set; }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Index()
         {
             ViewBag.DocumentationProvider = Configuration.Services.GetDocumentationProvider();
             return View(Configuration.Services.GetApiExplorer().ApiDescriptions);
         }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <param name="apiId"></param>
+        /// <returns></returns>
         public ActionResult Api(string apiId)
         {
             if (!String.IsNullOrEmpty(apiId))
@@ -45,6 +64,11 @@ namespace server_api.Areas.HelpPage.Controllers
             return View(ErrorViewName);
         }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <param name="modelName"></param>
+        /// <returns></returns>
         public ActionResult ResourceModel(string modelName)
         {
             if (!String.IsNullOrEmpty(modelName))

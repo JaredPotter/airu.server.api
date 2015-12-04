@@ -13,23 +13,56 @@ namespace server_api
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
+    /// <summary>
+    /// *xml comment*
+    /// </summary>
     public partial class AirU_Database_Entity : DbContext
     {
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public AirU_Database_Entity()
             : base("name=AirU_Database_Entity")
         {
         }
     
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
         }
     
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<DataPoint> DataPoints { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<DeviceGroup> DeviceGroups { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<Device> Devices { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<DeviceState> DeviceStates { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<Pollutant> Pollutants { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<User> Users { get; set; }
     }
 }

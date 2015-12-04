@@ -91,7 +91,7 @@ namespace server_api.Controllers
         ///   This method returns all registered users' email addresses.
         /// </summary>
         /// <returns></returns>
-        [ResponseType(typeof(IEnumerable<SwaggerUser>))]
+        [ResponseType(typeof(IEnumerable<SwaggerUsers>))]
         [Route("frontend/registeredUsers")]
         [HttpGet]
         public IHttpActionResult ServerAndDatabaseTest()
@@ -102,12 +102,11 @@ namespace server_api.Controllers
 
             if(allUsers != null)
             {
-
-                List<SwaggerUser> swaggerUsers = new List<SwaggerUser>();
+                List<SwaggerUsers> swaggerUsers = new List<SwaggerUsers>();
 
                 foreach (var item in allUsers)
                 {
-                    swaggerUsers.Add(new SwaggerUser(item.Email));
+                    swaggerUsers.Add(new SwaggerUsers(item.Email));
                 }
 
                 return Ok(swaggerUsers);
@@ -155,7 +154,6 @@ namespace server_api.Controllers
                         pl.values.Add(new object[2]);
                         pl.values.Last()[0] = ConvertDateTimeToMilliseconds(item.MeasurementTime);
                         pl.values.Last()[1] = (decimal)item.Value;
-
                     }
                     data.Add(pl);
                 }
@@ -173,30 +171,30 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/registerUser")]
         [HttpPost]
-        public IHttpActionResult UserRegistration([FromBody]User user)
+        public IHttpActionResult UserRegistration([FromBody]SwaggerUser user)
         {
             var db = new AirUDatabaseCOE();
 
-            User existingUser = db.Users.SingleOrDefault(x => x.Email == user.Email);
+            User existingUser = db.Users.SingleOrDefault(x => x.Email == user.email);
 
             if (existingUser == null)
             {
                 // Perform queries to insert new user into database.
                 User newUser = new User();
-                newUser.Email = user.Email;
-                newUser.Pass = user.Pass;
+                newUser.Email = user.email;
+                newUser.Pass = user.pass;
 
                 db.Users.Add(newUser);
                 db.SaveChanges();
 
                 // Account register success.
-                return Ok("Account registration successful! Welcome, " + user.Email);
+                return Ok("Account registration successful! Welcome, " + user.email);
             }
             else
             {
                 // Account register failed. Account with email address: '<user.Email>' already exists. Please try a different email address.
                 return BadRequest("Account registration failed! Account with email address: " + 
-                                                                             user.Email + 
+                                                                             user.email + 
                                                                              " already exists. Please try a different email address.");
             }
         }
@@ -208,16 +206,16 @@ namespace server_api.Controllers
         /// <returns></returns>
         [Route("frontend/login")]
         [HttpPost]
-        public IHttpActionResult UserLogin([FromBody]User user)
+        public IHttpActionResult UserLogin([FromBody]SwaggerUser user)
         {
             var db = new AirUDatabaseCOE();
 
-            User validUserAndPass = db.Users.SingleOrDefault(x => x.Email == user.Email && x.Pass == user.Pass);
+            User validUserAndPass = db.Users.SingleOrDefault(x => x.Email == user.email && x.Pass == user.pass);
 
             if (validUserAndPass != null)
             {
                 // Login success.
-                return Ok("Login Successful! Welcome, " + user.Email);
+                return Ok("Login Successful! Welcome, " + user.email);
             }
             else
             {
@@ -234,25 +232,37 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="newDeviceAndState">The current Device and its DeviceState</param>
         /// <returns></returns>
+        [ResponseType(typeof(SwaggerDeviceAndState))]
         [Route("frontend/registerDevice")]
         [HttpPost]
-        public IHttpActionResult DeviceRegistration([FromBody]DeviceAndState newDeviceAndState)
+        public IHttpActionResult DeviceRegistration([FromBody]SwaggerDeviceAndState newDeviceAndState)
         {
             var db = new AirUDatabaseCOE();
 
-            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceAndState.device.DeviceID);
 
-            if (existingDevice != null)
+            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceAndState.Id);
+            if (existingDevice == null)
             {
                 // Add device success.
-                db.Devices.Add(newDeviceAndState.device);
-                newDeviceAndState.state.StateTime = new DateTime(1900, 1, 1);
-                newDeviceAndState.state.Long = 360.0m;
-                newDeviceAndState.state.Lat = 360.0m;
-                db.DeviceStates.Add(newDeviceAndState.state);
+                Device device = new Device();
+                device.DeviceID = newDeviceAndState.Id;
+                device.Email = "jaredpotter1@gmail.com"; // newDeviceAndState.Email;
+                device.DevicePrivacy = newDeviceAndState.Private;
+                db.Devices.Add(device);
                 db.SaveChanges();
+
+                DeviceState state = new DeviceState();
+                state.Device = device;
+                state.DeviceID = newDeviceAndState.Id;
+                state.InOrOut = newDeviceAndState.Indoor;
+                state.StatePrivacy = newDeviceAndState.Private;
+                state.StateTime = new DateTime(1900, 1, 1);
+                state.Long = 360.0m;
+                state.Lat = 360.0m;
+                db.DeviceStates.Add(state);
+                db.SaveChanges();
+
                 return Ok(newDeviceAndState);
-                
             }
             else
             {
@@ -262,15 +272,20 @@ namespace server_api.Controllers
         }
 
         /// <summary>
+        /// ***METHOD NOT PART OF PROTOTYPE*** ignore till spring.
+        /// 
         ///   Returns the set of DeviceStates associated with the given user email.
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
+        //[ResponseType(typeof())]
         [Route("frontend/getUsersDeviceStates")]
-        [HttpPost]
-        public IHttpActionResult GetUsersDeviceStates([FromBody]string email)
+        [HttpGet]
+        public IHttpActionResult GetUsersDeviceStates()
         {
             var db = new AirUDatabaseCOE();
+
+            string email = "jaredpotter1@gmail.com";
 
             // Validate given email has associated User.
             User registeredUser = db.Users.SingleOrDefault(x => x.Email == email);
@@ -288,7 +303,6 @@ namespace server_api.Controllers
                 // JsonConvert.SerializeObject(deviceStates) - does not work, circular reference
 
                 return Ok(deviceStates);
-                //return Ok("Item Found!");
             }
             else
             {
@@ -298,6 +312,8 @@ namespace server_api.Controllers
         }
 
         /// <summary>
+        /// ***METHOD NOT PART OF PROTOTYPE*** ignore till spring.
+        /// 
         ///   Updates a single AMS DeviceState from the "my devices" settings web page.
         /// </summary>
         /// <param name="state">The state of the device</param>
@@ -356,7 +372,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerAMSList>))]
         [Route("frontend/map")]
         [HttpPost]
-        public IHttpActionResult GetAllDevicesInMapRange([FromBody]MapParameters para)
+        public IHttpActionResult GetAllDevicesInMapRange([FromBody]SwaggerMapParameters para)
         {
             // SHOULD BE VARIABLE
             decimal latMin = para.southWest.lat;
@@ -403,7 +419,7 @@ namespace server_api.Controllers
         [ResponseType(typeof(IEnumerable<SwaggerHeatMapValueList>))]
         [Route("frontend/heatmap")]
         [HttpPost]
-        public IHttpActionResult GetLatestValuesForSpecifiedPollutantInMapRange([FromBody]HeatMapParameters para)
+        public IHttpActionResult GetLatestValuesForSpecifiedPollutantInMapRange([FromBody]SwaggerHeatMapParameters para)
         {
             // DEFAULT VALUES
             DateTime measurementTimeMax = DateTime.Now;
@@ -550,7 +566,6 @@ namespace server_api.Controllers
                 // Device with DeviceID: <deviceID> does not exist.
                 return NotFound();
             }
-
         }
 
         /*
@@ -584,140 +599,9 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="date">the date to be converted</param>
         /// <returns>date in milliseconds since January 1st, 1970</returns>
-        public long ConvertDateTimeToMilliseconds(DateTime date)
+        public static long ConvertDateTimeToMilliseconds(DateTime date)
         {
             return (long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds;
-        }
-
-        /// <summary>
-        /// This class represents both a Device and DeviceState object.
-        /// </summary>
-        public class DeviceAndState
-        {
-            /// <summary>
-            /// The Device
-            /// </summary>
-            public Device device {get; set;}
-
-            /// <summary>
-            /// The DeviceState
-            /// </summary>
-            public DeviceState state {get; set;}
-        }
-
-        /// <summary>
-        /// This class stores both the NE and SW bounds sent from a
-        /// map view.
-        /// </summary>
-        public class MapParameters
-        {
-            /// <summary>
-            /// NE coordinates
-            /// </summary>
-            public Coordinate northEast { get; set; }
-
-            /// <summary>
-            /// SW coordinates
-            /// </summary>
-            public Coordinate southWest { get; set; }
-        }
-
-        /// <summary>
-        /// This class represents a coordinate, which contains both a
-        /// latitude and longitude;
-        /// </summary>
-        public class Coordinate
-        {
-            /// <summary>
-            /// Latitude
-            /// </summary>
-            public decimal lat { get; set; }
-
-            /// <summary>
-            /// Longitude
-            /// </summary>
-            public decimal lng { get; set; }
-        }
-
-        /// <summary>
-        /// This stores both the NE and SW bounds sent from a 
-        /// map view, and combines them with the name of a pollutant.
-        /// </summary>
-        public class HeatMapParameters
-        {
-            /// <summary>
-            /// NE and SW bound
-            /// </summary>
-            public MapParameters mapParameters {get; set;}
-
-            /// <summary>
-            /// Pollutant Name
-            /// </summary>
-            public string pollutantName {get; set;}
-        }
-
-        /// <summary>
-        /// This class contains time/value data for each of an AMSes pollutants
-        /// </summary>
-        public class AMSPollutantsData
-        {
-            /// <summary>
-            /// 
-            /// </summary>
-            public string key {get; set;}
-
-            /// <summary>
-            /// List of PollutantDataSets for AMS
-            /// </summary>
-            public List<PollutantDataSet> values {get; set;}
-
-            /// <summary>
-            /// Constructor - Initializes the AMS PollutantsData
-            /// </summary>
-            public AMSPollutantsData(string pollutant)
-            {
-                key = pollutant;
-                values = new List<PollutantDataSet>();
-            }
-        }
-
-        /// <summary>
-        /// This class represents a pollutant and a set of times and values
-        /// that may be used to store the data of a pollutant over time.
-        /// </summary>
-        public class PollutantDataSet
-        {
-            /// <summary>
-            /// Pollutant Name
-            /// </summary>
-            public string key {get; set;}
-
-            /// <summary>
-            /// List of a pair of DateTimes (long - represented in milliseconds
-            /// since 1970) and values (doubles)
-            /// </summary>
-            public List<Tuple<long, double>> points;
-
-            /// <summary>
-            /// Constructor - Creates a new instance with the key (Pollutant Name)
-            /// set to the argument provided.
-            /// </summary>
-            /// <param name="key">Pollutant Name</param>
-            public PollutantDataSet(string key)
-            {
-                this.key = key;
-                points = new List<Tuple<long, double>>();
-            }
-
-            /// <summary>
-            /// Adds a pair, a date and a value, to the list of dates and values
-            /// 
-            /// </summary>
-            /// <param name="date">The time the value was measured for the point</param>
-            /// <param name="value">The measured value for the point</param>
-            public void AddValue(DateTime date, double value){
-                points.Add(new Tuple<long, double>((long)(date - new DateTime(1970, 1, 1)).TotalMilliseconds, value));
-            }
         }
     }
 }

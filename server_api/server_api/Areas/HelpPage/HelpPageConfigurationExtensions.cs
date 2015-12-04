@@ -16,6 +16,9 @@ using server_api.Areas.HelpPage.Models;
 
 namespace server_api.Areas.HelpPage
 {
+    /// <summary>
+    /// *xml comment*
+    /// </summary>
     public static class HelpPageConfigurationExtensions
     {
         private const string ApiModelPrefix = "MS_HelpPageApiModel_";

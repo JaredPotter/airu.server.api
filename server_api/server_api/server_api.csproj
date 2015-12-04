@@ -246,7 +246,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="Devices_States_and_Datapoints.cs" />
-    <Compile Include="Models\SwaggerResponseModels.cs" />
+    <Compile Include="Models\SwaggerModels.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
