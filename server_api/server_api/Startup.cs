@@ -31,7 +31,7 @@ namespace server_api.App_Start
             config.EnableSwagger(c => {
                 c.SingleApiVersion("v1", "server_api");
                 c.IncludeXmlComments(GetXmlCommentsPath());
-
+                c.RootUrl(req => req.RequestUri.GetLeftPart(UriPartial.Authority) + VirtualPathUtility.ToAbsolute("~/").TrimEnd('/'));
             } ).EnableSwaggerUi();
 
            //Swashbuckle.Bootstrapper.Init(config);
