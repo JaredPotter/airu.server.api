@@ -5,21 +5,58 @@ namespace server_api
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
 
+    /// <summary>
+    /// *xml comment*
+    /// </summary>
     public partial class AirUDatabaseCOE : DbContext
     {
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public AirUDatabaseCOE()
             : base("name=AirUDatabaseCOE")
         {
         }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<DataPoint> DataPoints { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<DeviceGroup> DeviceGroups { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<Device> Devices { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<DeviceState> DeviceStates { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<Pollutant> Pollutants { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<User> Users { get; set; }
+
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public virtual DbSet<Devices_States_and_Datapoints> Devices_States_and_Datapoints { get; set; }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <param name="modelBuilder">*xml comment*</param>
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DataPoint>()
