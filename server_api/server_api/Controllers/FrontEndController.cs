@@ -519,7 +519,7 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="deviceID"></param>
         /// <returns></returns>
-        [ResponseType(typeof(IEnumerable<SwaggerLatestPollutantsList>))]
+        [ResponseType(typeof(SwaggerLatestDataPoints))]
         [Route("frontend/singleLatest")]
         [HttpPost]
         public IHttpActionResult GetLatestDataFromSingleAMSDevice([FromBody]string deviceID)
@@ -533,6 +533,7 @@ namespace server_api.Controllers
                 // Performs database query to obtain the latest Datapoints for specific DeviceID.
                 SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
                 SwaggerLatestPollutantsList latestPollutants = new SwaggerLatestPollutantsList();
+                SwaggerLatestDataPoints latest = new SwaggerLatestDataPoints();
                 using (SqlConnection myConnection = conn)
                 {
                     string oString =   @"select Devices_States_and_DataPoints.DeviceID,
@@ -567,12 +568,49 @@ namespace server_api.Controllers
                         while (oReader.Read())
                         {
                             latestPollutants.AddPollutantAndValue(oReader["PollutantName"].ToString(), (double)oReader["Value"]);
+                        }     
+
+                        foreach (var item in latestPollutants.latest)
+                        {
+                            switch (item.pollutantName)
+                            {
+                                case "Altitude":
+                                    latest.altitude = item.value.ToString();
+                                    break;
+
+                                case "CO":
+                                    latest.co = item.value.ToString();
+                                    break;
+
+                                case "CO2":
+                                    latest.co2 = item.value.ToString();
+                                    break;
+
+                                case "Humidity":
+                                    latest.humidity = item.value.ToString();
+                                    break;
+
+                                case "NO2":
+                                    latest.no2 = item.value.ToString();
+                                    break;
+
+                                case "PM":
+                                    latest.pm = item.value.ToString();
+                                    break;
+
+                                case "Pressure":
+                                    latest.pressure = item.value.ToString();
+                                    break;
+
+                                case "Temperature":
+                                    latest.temp = item.value.ToString();
+                                    break;
+                            }
                         }
                         myConnection.Close();
                     }
                 }
-
-                return Ok(latestPollutants);
+                return Ok(latest);
             }
             else
             {

@@ -312,6 +312,66 @@ namespace server_api.Models
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    public class SwaggerLatestDataPoints
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string co { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string pm { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string co2 { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string no2 { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string o3 { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string temp { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string humidity { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string pressure { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string altitude { get; set; }
+    }
+
+    /// <summary>
     ///  Used to return values to the details pane.
     /// 
     ///  {
