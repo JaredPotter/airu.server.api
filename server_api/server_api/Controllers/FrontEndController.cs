@@ -130,36 +130,49 @@ namespace server_api.Controllers
         public IHttpActionResult GetAllDataPointsForDevice([FromBody]string deviceID)
         {
             var db = new AirUDatabaseCOE();
-            List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
 
-            List<SwaggerPollutantList> data = new List<SwaggerPollutantList>();
-            
-            StringBuilder msg = new StringBuilder();
 
-            foreach (Pollutant p in pollutants)
+            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == deviceID);
+
+            if (existingDevice != null)
             {
-                var amsDataForPollutant = from a in db.Devices_States_and_Datapoints
-                                          where a.DeviceID == deviceID
-                                          && a.PollutantName == p.PollutantName
-                                          orderby a.MeasurementTime
-                                          select a;
 
-                /* MOVE ALTITUDE TO STATE */
-                if (amsDataForPollutant.Count() != 0 && !p.PollutantName.Equals("Altitude"))
+                List<Pollutant> pollutants = db.Pollutants.Select(x => x).ToList<Pollutant>();
+
+                List<SwaggerPollutantList> data = new List<SwaggerPollutantList>();
+
+                StringBuilder msg = new StringBuilder();
+
+                foreach (Pollutant p in pollutants)
                 {
-                    SwaggerPollutantList pl = new SwaggerPollutantList(p.PollutantName);
-                    
-                    foreach (var item in amsDataForPollutant)
-                    {
-                        pl.values.Add(new object[2]);
-                        pl.values.Last()[0] = ConvertDateTimeToMilliseconds(item.MeasurementTime);
-                        pl.values.Last()[1] = (decimal)item.Value;
-                    }
-                    data.Add(pl);
-                }
-            }
+                    var amsDataForPollutant = from a in db.Devices_States_and_Datapoints
+                                              where a.DeviceID == deviceID
+                                              && a.PollutantName == p.PollutantName
+                                              orderby a.MeasurementTime
+                                              select a;
 
-            return Ok(data);
+                    /* MOVE ALTITUDE TO STATE */
+                    if (amsDataForPollutant.Count() != 0 && !p.PollutantName.Equals("Altitude"))
+                    {
+                        SwaggerPollutantList pl = new SwaggerPollutantList(p.PollutantName);
+
+                        foreach (var item in amsDataForPollutant)
+                        {
+                            pl.values.Add(new object[2]);
+                            pl.values.Last()[0] = ConvertDateTimeToMilliseconds(item.MeasurementTime);
+                            pl.values.Last()[1] = (decimal)item.Value;
+                        }
+                        data.Add(pl);
+                    }
+                }
+
+                return Ok(data);
+            }
+            else
+            {
+                // Account register failed. Account with email address: '<user.Email>' already exists. Please try a different email address.
+                return BadRequest("Device with ID: " + deviceID + " does not exist. Please try a different Device ID.");
+            }
         }
 
         // ~~~~~ POST ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
