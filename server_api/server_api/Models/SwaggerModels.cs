@@ -137,34 +137,63 @@ namespace server_api.Models
 	/// "Outdoor": true
     /// }
     /// </summary>
-    public class SwaggerDeviceAndState
+    public class SwaggerDeviceState
     {
         /// <summary>
         /// 
         /// </summary>
-        public string Name { get; set; }
+        public string name { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [StringLength(17)]
-        public string Id { get; set; }
+        public string id { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool Private { get; set; }
+        public bool privacy { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public string Purpose { get; set; }
+        public string purpose { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool Indoor { get; set; }
+        public bool indoor { get; set; }
+
+        public Location location;
+
+        public string owner { get; set; }
+
+        public SwaggerDeviceState(string name, string id, bool privacy, string purpose, bool indoor, decimal lat, decimal lng, string owner)
+        {
+            this.name = name;
+            this.id = id;
+            this.privacy = privacy;
+            this.purpose = purpose;
+            this.indoor = indoor;
+            this.owner = owner;
+            this.location = new Location(lat, lng);
+        }
+
+        public class Location
+        {
+            public decimal lat { get; set; }
+            public decimal lng { get; set; }
+
+            public Location(decimal lat, decimal lng)
+            {
+                this.lat = lat;
+                this.lng = lng;
+            }
+        }
     }
+
+    
 
     /// <summary>
     /// 
