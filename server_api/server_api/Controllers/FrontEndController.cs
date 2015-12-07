@@ -430,9 +430,9 @@ namespace server_api.Controllers
         /// <param name="newDeviceState">The current Device and its DeviceState</param>
         /// <returns></returns>
         [ResponseType(typeof(SwaggerDeviceState))]
-        [Route("frontend/registerDevice")]
+        [Route("frontend/registerUserDevice")]
         [HttpPost]
-        public IHttpActionResult RegisterDevice([FromBody]SwaggerDeviceState newDeviceState)
+        public IHttpActionResult RegisterUserDevice([FromBody]SwaggerDeviceState newDeviceState)
         {
             var db = new AirUDatabaseCOE();
 
@@ -472,12 +472,11 @@ namespace server_api.Controllers
         /// <summary>
         ///   Returns the set of DeviceStates associated with the given user email.
         /// </summary>
-        /// <param name="email"></param>
         /// <returns></returns>
         [ResponseType(typeof(IEnumerable<SwaggerDeviceState>))]
-        [Route("frontend/getUsersDeviceStates")]
+        [Route("frontend/getUserDeviceStates")]
         [HttpGet]
-        public IHttpActionResult GetUsersDeviceStates()
+        public IHttpActionResult GetUserDeviceStates()
         {
             var db = new AirUDatabaseCOE();
 
@@ -525,37 +524,6 @@ namespace server_api.Controllers
                         myConnection.Close();
                     }
                 }
-
-
-
-                /*
-
-                // Perform database query to retrive the most recent AMS DeviceStates for each AMS owned by User.
-                var deviceStates = from device in db.Devices
-                                   where device.Email == email
-                                   join state in db.DeviceStates
-                                   on device.DeviceID equals state.DeviceID
-                                   select state;
-
-
-                List<SwaggerDeviceState> swaggerDeviceStates = new List<SwaggerDeviceState>();
-
-                foreach(var state in deviceStates)
-                {
-                    swaggerDeviceStates.Add(new SwaggerDeviceState("",
-                                                                    state.DeviceID,
-                                                                    state.StatePrivacy,
-                                                                    "",
-                                                                    state.InOrOut,
-                                                                    state.Lat,
-                                                                    state.Long,
-                                                                    email));
-                }
-                  
-                */
-                // TODO - Send user list of AMS DeviceState. 
-                // JsonConvert.SerializeObject(deviceStates) - does not work, circular reference
-
                 return Ok(swaggerDeviceStates);
             }
             else
@@ -570,9 +538,10 @@ namespace server_api.Controllers
         /// </summary>
         /// <param name="state">The state of the device</param>
         /// <returns></returns>
-        [Route("frontend/state")]
+        [ResponseType(typeof(IEnumerable<SwaggerDeviceState>))]
+        [Route("frontend/updateUserDeviceState")]
         [HttpPut]
-        public IHttpActionResult UpdateDeviceState([FromBody]SwaggerDeviceState state)
+        public IHttpActionResult UpdateUserDeviceState([FromBody]SwaggerDeviceState state)
         {
             var db = new AirUDatabaseCOE();
             
