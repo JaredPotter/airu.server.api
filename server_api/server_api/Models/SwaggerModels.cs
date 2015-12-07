@@ -18,6 +18,31 @@ namespace server_api.Models
     /// <summary>
     /// 
     /// </summary>
+    public class SwaggerAQIData
+    {
+        public string DateObserved { get; set; }
+        public int HourObserved { get; set; }
+        public string LocalTimeZone { get; set; }
+        public string ReportingArea { get; set; }
+        public string StateCode { get; set; }
+        public decimal Latitude { get; set; }
+        public decimal Longitude { get; set; }
+        public string ParameterName { get; set; }
+        public int AQI { get; set; }
+        public Category Category;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Category
+    {
+        public int Number { get; set; }
+        public string Name { get; set; }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
     public class SwaggerUsers
     {
         /// <summary>

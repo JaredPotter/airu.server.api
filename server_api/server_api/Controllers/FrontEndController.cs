@@ -11,6 +11,11 @@ using System.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System.Web.Http.Description;
 using server_api.Models;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization;
 
 
 namespace server_api.Controllers
@@ -55,7 +60,6 @@ namespace server_api.Controllers
          * + UserLogin() - Validates user based on Email and Pass.
          */
 
-        // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /// <summary>
         ///   This is a testing method. 
         ///   
@@ -69,7 +73,41 @@ namespace server_api.Controllers
             return Ok("Success");
         }
 
-        // ~~~~~ GET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /// <summary>
+        /// Response Example:
+        /// {
+        ///    "DateObserved": "2015-12-06 ",
+        ///    "HourObserved": 17,
+        ///    "LocalTimeZone": "MST",
+        ///    "ReportingArea": "Salt Lake City",
+        ///    "StateCode": "UT",
+        ///    "Latitude": 40.777,
+        ///    "Longitude": -111.93,
+        ///    "ParameterName": "O3",
+        ///    "AQI": 17,
+        ///    "Category": {
+        ///        "Number": 1,
+        ///        "Name": "Good"
+        /// }
+        //}
+        /// </summary>
+        /// <returns></returns>
+        [ResponseType(typeof(SwaggerAQIData))]
+        [Route("frontend/aqi")]
+        [HttpGet]
+        public IHttpActionResult GetAQI()
+        {
+            HttpWebRequest request = WebRequest.Create("http://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=84102&distance=25&API_KEY=1CD19983-D26A-46F2-8022-6A6E16A991F7") as HttpWebRequest;
+            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+            Stream stream = response.GetResponseStream();
+            StreamReader reader = new StreamReader(stream);
+            string jsonString = reader.ReadToEnd();
+
+            var json = JsonConvert.DeserializeObject<SwaggerAQIData[]>(jsonString);
+
+            return Ok(json[0]);
+        }
+
         /// <summary>
         ///   This is a testing method. 
         ///   
@@ -174,8 +212,6 @@ namespace server_api.Controllers
                 return BadRequest("Device with ID: " + deviceID + " does not exist. Please try a different Device ID.");
             }
         }
-
-        // ~~~~~ POST ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         /// <summary>
         ///   Validates user is not already in database and if not, creates new User in database.
