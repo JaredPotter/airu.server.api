@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
+using System.Xml.Serialization;
 
 namespace server_api.Models
 {
@@ -31,7 +32,10 @@ namespace server_api.Models
         public class Site
         {
             public string name { get; set; }
-            public Data data { get; set; }
+
+            [XmlElement("data")]
+            public Data[] data { get; set; }
+
             public double latitude { get; set; }
             public double longitude { get; set; }
         }
@@ -185,7 +189,6 @@ namespace server_api.Models
         {
             key = pollutantName;
             values = new List<object[]>();
-            
         }
     }
 
