@@ -427,39 +427,40 @@ namespace server_api.Controllers
         /// - Updates Database to represent new association between existing user and 
         ///    new device.
         /// </summary>
-        /// <param name="newDeviceAndState">The current Device and its DeviceState</param>
+        /// <param name="newDeviceState">The current Device and its DeviceState</param>
         /// <returns></returns>
-        [ResponseType(typeof(SwaggerDeviceAndState))]
+        [ResponseType(typeof(SwaggerDeviceState))]
         [Route("frontend/registerDevice")]
         [HttpPost]
-        public IHttpActionResult DeviceRegistration([FromBody]SwaggerDeviceAndState newDeviceAndState)
+        public IHttpActionResult RegisterDevice([FromBody]SwaggerDeviceState newDeviceState)
         {
             var db = new AirUDatabaseCOE();
 
-
-            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceAndState.Id);
+            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceState.id);
             if (existingDevice == null)
             {
                 // Add device success.
                 Device device = new Device();
-                device.DeviceID = newDeviceAndState.Id;
+                // device.Name = newDeviceState.Name;
+                device.DeviceID = newDeviceState.id;
                 device.Email = "jaredpotter1@gmail.com"; // newDeviceAndState.Email;
-                device.DevicePrivacy = newDeviceAndState.Private;
+                device.DevicePrivacy = newDeviceState.privacy;
+                // devicePurpose = newDeviceState.Purpose;
                 db.Devices.Add(device);
                 db.SaveChanges();
 
                 DeviceState state = new DeviceState();
                 state.Device = device;
-                state.DeviceID = newDeviceAndState.Id;
-                state.InOrOut = newDeviceAndState.Indoor;
-                state.StatePrivacy = newDeviceAndState.Private;
+                state.DeviceID = newDeviceState.id;
+                state.InOrOut = newDeviceState.indoor;
+                state.StatePrivacy = newDeviceState.privacy;
                 state.StateTime = new DateTime(1900, 1, 1);
-                state.Long = 360.0m;
-                state.Lat = 360.0m;
+                state.Long = 0.0m;
+                state.Lat = 90.0m;
                 db.DeviceStates.Add(state);
                 db.SaveChanges();
 
-                return Ok(newDeviceAndState);
+                return Ok(newDeviceState);
             }
             else
             {
@@ -469,13 +470,11 @@ namespace server_api.Controllers
         }
 
         /// <summary>
-        /// ***METHOD NOT PART OF PROTOTYPE*** ignore till spring.
-        /// 
         ///   Returns the set of DeviceStates associated with the given user email.
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        //[ResponseType(typeof())]
+        [ResponseType(typeof(IEnumerable<SwaggerDeviceState>))]
         [Route("frontend/getUsersDeviceStates")]
         [HttpGet]
         public IHttpActionResult GetUsersDeviceStates()
@@ -496,10 +495,24 @@ namespace server_api.Controllers
                                    on device.DeviceID equals state.DeviceID
                                    select state;
 
+
+                List<SwaggerDeviceState> swaggerDeviceStates = new List<SwaggerDeviceState>();
+
+                foreach(var state in deviceStates)
+                {
+                    swaggerDeviceStates.Add(new SwaggerDeviceState("",
+                                                                    state.DeviceID,
+                                                                    state.StatePrivacy,
+                                                                    "",
+                                                                    state.InOrOut,
+                                                                    state.Lat,
+                                                                    state.Long,
+                                                                    email));
+                }
                 // TODO - Send user list of AMS DeviceState. 
                 // JsonConvert.SerializeObject(deviceStates) - does not work, circular reference
 
-                return Ok(deviceStates);
+                return Ok(swaggerDeviceStates);
             }
             else
             {
@@ -509,28 +522,26 @@ namespace server_api.Controllers
         }
 
         /// <summary>
-        /// ***METHOD NOT PART OF PROTOTYPE*** ignore till spring.
-        /// 
         ///   Updates a single AMS DeviceState from the "my devices" settings web page.
         /// </summary>
         /// <param name="state">The state of the device</param>
         /// <returns></returns>
         [Route("frontend/state")]
-        [HttpPost]
-        public IHttpActionResult UpdateDeviceState([FromBody]DeviceState state)
+        [HttpPut]
+        public IHttpActionResult UpdateDeviceState([FromBody]SwaggerDeviceState state)
         {
             var db = new AirUDatabaseCOE();
             
             // Validate Device from given DeviceId exists.
-            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == state.DeviceID);
+            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == state.id);
 
             if (registeredDevice != null)
             {
                 // Request previous state from database based on state.DeviceID
                 DeviceState previousState = (
                                     from device in db.DeviceStates
-                                    where device.DeviceID == state.DeviceID
-                                    && device.StateTime <= state.StateTime // should be measurementtime
+                                    where device.DeviceID == state.id
+                                    && device.StateTime <= DateTime.Now // **May be a future source of contention - REVIEW**
                                     group device by device.DeviceID into deviceIDGroup
                                     select new
                                     {
@@ -542,15 +553,20 @@ namespace server_api.Controllers
                                     select latestStateGroup.FirstOrDefault()).Single();
 
                 // Inherit lat and long from previous state
-                decimal prevLong= previousState.Long;
-                decimal prevLat = previousState.Lat;
-                
-                // TODO
-                // Save new state to database
+
+                DeviceState newDeviceState = new DeviceState();
+                newDeviceState.Device = previousState.Device;
+                newDeviceState.DeviceID = state.id;
+                newDeviceState.InOrOut = state.indoor;
+                newDeviceState.StatePrivacy = state.privacy;
+                newDeviceState.Lat = previousState.Lat;
+                newDeviceState.Long = previousState.Long;
+                newDeviceState.StateTime = DateTime.Now;
+                db.DeviceStates.Add(newDeviceState);
+                db.SaveChanges();
 
                 // Send user newly updated state back to user
-
-                return Ok();
+                return Ok(state);
             }
             else
             {
