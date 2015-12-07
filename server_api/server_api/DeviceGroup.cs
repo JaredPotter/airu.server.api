@@ -8,6 +8,7 @@ namespace server_api
 
     public partial class DeviceGroup
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public DeviceGroup()
         {
             Devices = new HashSet<Device>();
@@ -25,6 +26,7 @@ namespace server_api
 
         public virtual User User { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Device> Devices { get; set; }
     }
 }

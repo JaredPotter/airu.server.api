@@ -282,7 +282,7 @@ namespace server_api.Controllers
         [HttpGet]
         public IHttpActionResult ServerAndDatabaseTest()
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             List<User> allUsers = db.Users.Select(x => x).ToList<User>();
 
@@ -315,7 +315,7 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult GetAllDataPointsForDevice([FromBody]string deviceID)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
 
             Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == deviceID);
@@ -370,7 +370,7 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult UserRegistration([FromBody]SwaggerUser user)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             User existingUser = db.Users.SingleOrDefault(x => x.Email == user.email);
 
@@ -405,7 +405,7 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult UserLogin([FromBody]SwaggerUser user)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             User validUserAndPass = db.Users.SingleOrDefault(x => x.Email == user.email && x.Pass == user.pass);
 
@@ -434,18 +434,18 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult RegisterUserDevice([FromBody]SwaggerDeviceState newDeviceState)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceState.id);
             if (existingDevice == null)
             {
                 // Add device success.
                 Device device = new Device();
-                // device.Name = newDeviceState.Name;
+                device.Name = newDeviceState.name;
                 device.DeviceID = newDeviceState.id;
                 device.Email = "jaredpotter1@gmail.com"; // newDeviceAndState.Email;
                 device.DevicePrivacy = newDeviceState.privacy;
-                // devicePurpose = newDeviceState.Purpose;
+                device.Purpose = newDeviceState.purpose;
                 db.Devices.Add(device);
                 db.SaveChanges();
 
@@ -478,7 +478,7 @@ namespace server_api.Controllers
         [HttpGet]
         public IHttpActionResult GetUserDeviceStates()
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             string email = "jaredpotter1@gmail.com";
 
@@ -491,7 +491,7 @@ namespace server_api.Controllers
                 List<SwaggerDeviceState> swaggerDeviceStates = new List<SwaggerDeviceState>();
                 using (SqlConnection myConnection = conn)
                 {
-                    string oString = @"select MaxCompleteStates.DeviceID, MaxCompleteStates.StateTime, MaxCompleteStates.Lat, MaxCompleteStates.Long, MaxCompleteStates.InOrOut, MaxCompleteStates.StatePrivacy from
+                    string oString = @"select MaxCompleteStates.DeviceID, Devices.Name, Devices.Purpose, MaxCompleteStates.StateTime, MaxCompleteStates.Lat, MaxCompleteStates.Long, MaxCompleteStates.InOrOut, MaxCompleteStates.StatePrivacy from
                                         (select MaxStates.DeviceID, MaxStates.StateTime, DeviceStates.Lat, DeviceStates.Long, DeviceStates.InOrOut, DeviceStates.StatePrivacy from
 	                                        (select DeviceID, Max(StateTime) as StateTime
 				                                        from DeviceStates
@@ -511,10 +511,11 @@ namespace server_api.Controllers
                     {
                         while (oReader.Read())
                         {
-                            swaggerDeviceStates.Add(new SwaggerDeviceState("",
+                            swaggerDeviceStates.Add(new SwaggerDeviceState(
+                                                                    (string)oReader["Name"],
                                                                     (string)oReader["DeviceID"],
                                                                     (bool)oReader["StatePrivacy"],
-                                                                    "",
+                                                                    (string)oReader["Purpose"],
                                                                     (bool) oReader["InOrOut"],
                                                                     (decimal)oReader["Lat"],
                                                                     (decimal)oReader["Long"],
@@ -543,7 +544,7 @@ namespace server_api.Controllers
         [HttpPut]
         public IHttpActionResult UpdateUserDeviceState([FromBody]SwaggerDeviceState state)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
             
             // Validate Device from given DeviceId exists.
             Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == state.id);
@@ -578,6 +579,12 @@ namespace server_api.Controllers
                 db.DeviceStates.Add(newDeviceState);
                 db.SaveChanges();
 
+                registeredDevice.Name = state.name;
+                registeredDevice.Purpose = state.purpose;
+
+                //db.Devices.Add(registeredDevice);
+                db.SaveChanges();
+
                 // Send user newly updated state back to user
                 return Ok(state);
             }
@@ -606,7 +613,7 @@ namespace server_api.Controllers
             decimal longMin = para.southWest.lng;
             decimal longMax = para.northEast.lng;
 
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             var results = from state in db.DeviceStates
                           where
@@ -737,7 +744,7 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult GetLatestDataFromSingleAMSDevice([FromBody]string deviceID)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             // Validate DeviceID represents an actual AMS device.
             Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == deviceID);

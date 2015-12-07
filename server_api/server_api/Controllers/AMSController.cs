@@ -22,7 +22,7 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult AddAMSDataSet([FromBody]DataPoint[] dataSet)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
 
             db.DataPoints.AddRange(dataSet);
 
@@ -40,7 +40,7 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult UpdateAMSDeviceState([FromBody]DeviceState[] states)
         {
-            var db = new AirUDatabaseCOE();
+            var db = new AirUDBCOE();
             string deviceID = states[0].DeviceID;
             Device device = db.Devices.SingleOrDefault(x => x.DeviceID == deviceID);
 
