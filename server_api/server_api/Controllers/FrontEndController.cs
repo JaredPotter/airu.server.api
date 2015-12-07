@@ -113,22 +113,56 @@ namespace server_api.Controllers
         /// 
         /// </summary>
         /// <returns></returns>
-        [ResponseType(typeof(SwaggerDAQData))]
+        [ResponseType(typeof(IEnumerable<SwaggerDAQData>))]
         [Route("frontend/daq")]
         [HttpGet]
         public IHttpActionResult GetDAQStationData()
         {
-            HttpWebRequest request = WebRequest.Create("http://air.utah.gov/xmlFeed.php?id=slc") as HttpWebRequest;
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            Stream stream = response.GetResponseStream();
-            XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
-            StreamReader reader = new StreamReader(stream);
-            SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
+            string[] apiUrls = new string[] 
+                { "http://air.utah.gov/xmlFeed.php?id=boxelder",   // Box Elder
+                  "http://air.utah.gov/xmlFeed.php?id=cache",      // Cache
+                  "http://air.utah.gov/xmlFeed.php?id=p2",         // Carbon
+                  "http://air.utah.gov/xmlFeed.php?id=bv",         // Davis
+                  "http://air.utah.gov/xmlFeed.php?id=rs",         // Duchesne
+                  "http://air.utah.gov/xmlFeed.php?id=slc",        // Salt Lake
+                  "http://air.utah.gov/xmlFeed.php?id=tooele",     // Tooele
+                  "http://air.utah.gov/xmlFeed.php?id=v4",         // Uintah
+                  "http://air.utah.gov/xmlFeed.php?id=utah",       // Utah
+                  "http://air.utah.gov/xmlFeed.php?id=washington", // Washington
+                  "http://air.utah.gov/xmlFeed.php?id=weber"       // Weber
+                };   
 
-            data.site.latitude = 40.734280;
-            data.site.longitude = -111.871593;
+            Tuple<double, double>[] gpsLocations = new Tuple<double, double>[] 
+            { new Tuple<double, double>(41.510544, -112.014640), 
+              new Tuple<double, double>(41.737159, -111.836706),
+              new Tuple<double, double>(39.598401, -110.811250),
+              new Tuple<double, double>(40.979952, -111.887608),
+              new Tuple<double, double>(40.163389, -110.402936),
+              new Tuple<double, double>(40.734280, -111.871593), 
+              new Tuple<double, double>(40.530786, -112.298464),
+              new Tuple<double, double>(40.455679, -109.528717),
+              new Tuple<double, double>(40.296847, -111.695003),
+              new Tuple<double, double>(37.096288, -113.568486),
+              new Tuple<double, double>(41.222803, -111.973789) };
 
-            return Ok(data);
+            SwaggerDAQData[] dataArray = new SwaggerDAQData[11];
+
+            for (int i = 0; i < apiUrls.Length; i++)
+            {
+                HttpWebRequest request = WebRequest.Create(apiUrls[i]) as HttpWebRequest;
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                Stream stream = response.GetResponseStream();
+                XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
+                StreamReader reader = new StreamReader(stream);
+                SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
+
+                data.site.latitude = gpsLocations[i].Item1;
+                data.site.longitude = gpsLocations[i].Item2;
+
+                dataArray[i] = data;
+            }
+
+            return Ok(dataArray);
         }
 
         /// <summary>
