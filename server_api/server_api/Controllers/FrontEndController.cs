@@ -109,6 +109,11 @@ namespace server_api.Controllers
             return Ok(json[0]);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [ResponseType(typeof(SwaggerDAQData))]
         [Route("frontend/daq")]
         [HttpGet]
         public IHttpActionResult GetDAQStationData()
@@ -116,56 +121,14 @@ namespace server_api.Controllers
             HttpWebRequest request = WebRequest.Create("http://air.utah.gov/xmlFeed.php?id=slc") as HttpWebRequest;
             HttpWebResponse response = request.GetResponse() as HttpWebResponse;
             Stream stream = response.GetResponseStream();
-            //StreamReader reader = new StreamReader(stream);
-            //string jsonString = reader.ReadToEnd();
-
-            XmlSerializer serializer = new XmlSerializer(typeof(DAQData));
-
+            XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
             StreamReader reader = new StreamReader(stream);
-            DAQData data = (DAQData)serializer.Deserialize(reader);
-            reader.Close();
+            SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
 
             data.site.latitude = 40.734280;
             data.site.longitude = -111.871593;
 
             return Ok(data);
-        }
-
-        [System.Xml.Serialization.XmlRoot("air_quality_data")]
-        public class DAQData
-        {
-            public string state { get; set; }
-            public site site { get; set; }
-        }
-
-        [System.Xml.Serialization.XmlRoot("air_quality_data")]
-        public class site
-        {
-            public string name { get; set; }
-            public data data { get; set; }
-            public double latitude { get; set; }
-            public double longitude { get; set; }
-        }
-
-        public class data
-        {
-            public string date { get; set; }
-            public string ozone { get; set; }
-            public string ozone_8hr_avg { get; set; }
-            public string pm25 { get; set; }
-            public string pm25_24hr_avg { get; set; }
-            public string nox { get; set; }
-            public string no2 { get; set; }
-            public string temperature { get; set; }
-            public string relative_humidity { get; set; }
-            public string wind_speed { get; set; }
-            public string wind_direction { get; set; }
-            public string co { get; set; }
-            public string solar_radiation { get; set; }
-            public string so2 { get; set; }
-            public string noy { get; set; }
-            public string bp { get; set; }
-            public string pm10 { get; set; }
         }
 
         /// <summary>

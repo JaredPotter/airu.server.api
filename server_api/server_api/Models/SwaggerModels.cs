@@ -18,6 +18,53 @@ namespace server_api.Models
     /// <summary>
     /// 
     /// </summary>
+    [System.Xml.Serialization.XmlRoot("air_quality_data")]
+    public class SwaggerDAQData
+    {
+        public string state { get; set; }
+        public Site site { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [System.Xml.Serialization.XmlRoot("site")]
+        public class Site
+        {
+            public string name { get; set; }
+            public Data data { get; set; }
+            public double latitude { get; set; }
+            public double longitude { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [System.Xml.Serialization.XmlRoot("data")]
+        public class Data
+        {
+            public string date { get; set; }
+            public string ozone { get; set; }
+            public string ozone_8hr_avg { get; set; }
+            public string pm25 { get; set; }
+            public string pm25_24hr_avg { get; set; }
+            public string nox { get; set; }
+            public string no2 { get; set; }
+            public string temperature { get; set; }
+            public string relative_humidity { get; set; }
+            public string wind_speed { get; set; }
+            public string wind_direction { get; set; }
+            public string co { get; set; }
+            public string solar_radiation { get; set; }
+            public string so2 { get; set; }
+            public string noy { get; set; }
+            public string bp { get; set; }
+            public string pm10 { get; set; }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class SwaggerAQIData
     {
         public string DateObserved { get; set; }
@@ -40,6 +87,7 @@ namespace server_api.Models
         public int Number { get; set; }
         public string Name { get; set; }
     }
+
     /// <summary>
     /// 
     /// </summary>
