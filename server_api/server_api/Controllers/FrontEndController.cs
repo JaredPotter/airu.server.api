@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Runtime.Serialization;
+using System.Xml.Serialization;
 
 
 namespace server_api.Controllers
@@ -106,6 +107,62 @@ namespace server_api.Controllers
             var json = JsonConvert.DeserializeObject<SwaggerAQIData[]>(jsonString);
 
             return Ok(json[0]);
+        }
+
+        [Route("frontend/daq")]
+        [HttpGet]
+        public IHttpActionResult GetDAQStationData()
+        {
+            HttpWebRequest request = WebRequest.Create("http://air.utah.gov/xmlFeed.php?id=slc") as HttpWebRequest;
+            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+            Stream stream = response.GetResponseStream();
+            //StreamReader reader = new StreamReader(stream);
+            //string jsonString = reader.ReadToEnd();
+
+            XmlSerializer serializer = new XmlSerializer(typeof(DAQData));
+
+            StreamReader reader = new StreamReader(stream);
+            DAQData data = (DAQData)serializer.Deserialize(reader);
+            reader.Close();
+
+            return Ok(data);
+        }
+
+        [System.Xml.Serialization.XmlRoot("air_quality_data")]
+        public class DAQData
+        {
+            public string state { get; set; }
+            public site site { get; set; }
+        }
+
+        [System.Xml.Serialization.XmlRoot("air_quality_data")]
+        public class site
+        {
+            public string name { get; set; }
+            //[XmlArray("site")]
+            //[XmlArrayItem("data", typeof(data))]
+            public data data { get; set; }
+        }
+
+        public class data
+        {
+            public string date { get; set; }
+            public decimal ozone { get; set; }
+            public decimal ozone_8hr_avg { get; set; }
+            public decimal pm25 { get; set; }
+            public decimal pm25_24hr_avg { get; set; }
+            public decimal nox { get; set; }
+            public decimal no2 { get; set; }
+            public decimal temperature { get; set; }
+            public string relative_humidity { get; set; }
+            public decimal wind_speed { get; set; }
+            public string wind_direction { get; set; }
+            public decimal co { get; set; }
+            public decimal solar_radiation { get; set; }
+            public decimal so2 { get; set; }
+            public decimal noy { get; set; }
+            public string bp { get; set; }
+            public string pm10 { get; set; }
         }
 
         /// <summary>
