@@ -200,11 +200,11 @@ namespace server_api.Controllers
             List<SwaggerPollutantList> pollutantDataList = new List<SwaggerPollutantList>();
 
             List<string> dates = new List<string>();
-            SwaggerPollutantList ozone = new SwaggerPollutantList("Ozone");
-            SwaggerPollutantList pm25 = new SwaggerPollutantList("PM 2.5");
-            SwaggerPollutantList no2 = new SwaggerPollutantList("NO2");
-            SwaggerPollutantList temperature = new SwaggerPollutantList("Temperature");
-            SwaggerPollutantList co = new SwaggerPollutantList("CO");
+            SwaggerPollutantList ozone = new SwaggerPollutantList("Ozone ppm");
+            SwaggerPollutantList pm25 = new SwaggerPollutantList("PM 2.5 ug/m^3");
+            SwaggerPollutantList no2 = new SwaggerPollutantList("NO2 ppm");
+            SwaggerPollutantList temperature = new SwaggerPollutantList("Temperature F");
+            SwaggerPollutantList co = new SwaggerPollutantList("CO ppm");
 
             foreach(var dataSet in data.site.data)
             {
