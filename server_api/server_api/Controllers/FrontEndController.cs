@@ -488,6 +488,48 @@ namespace server_api.Controllers
 
             if (registeredUser != null)
             {
+                SqlConnection conn = new SqlConnection(@"Data Source=mssql.eng.utah.edu;Initial Catalog=lobato;Persist Security Info=True;User ID=lobato;Password=eVHDpynh;MultipleActiveResultSets=True;Application Name=EntityFramework");
+                List<SwaggerDeviceState> swaggerDeviceStates = new List<SwaggerDeviceState>();
+                using (SqlConnection myConnection = conn)
+                {
+                    string oString = @"select MaxCompleteStates.DeviceID, MaxCompleteStates.StateTime, MaxCompleteStates.Lat, MaxCompleteStates.Long, MaxCompleteStates.InOrOut, MaxCompleteStates.StatePrivacy from
+                                        (select MaxStates.DeviceID, MaxStates.StateTime, DeviceStates.Lat, DeviceStates.Long, DeviceStates.InOrOut, DeviceStates.StatePrivacy from
+	                                        (select DeviceID, Max(StateTime) as StateTime
+				                                        from DeviceStates
+				                                        group by DeviceID) as MaxStates
+		                                        left join DeviceStates
+		                                        on MaxStates.DeviceID=DeviceStates.DeviceID
+		                                        and MaxStates.StateTime = DeviceStates.StateTime) as MaxCompleteStates
+		                                        left join Devices
+		                                        on Devices.DeviceID=MaxCompleteStates.DeviceID
+		                                        where Devices.Email = @owner;";
+                    SqlCommand oCmd = new SqlCommand(oString, myConnection);
+
+                    oCmd.Parameters.AddWithValue("@owner", email);
+
+                    myConnection.Open();
+                    using (SqlDataReader oReader = oCmd.ExecuteReader())
+                    {
+                        while (oReader.Read())
+                        {
+                            swaggerDeviceStates.Add(new SwaggerDeviceState("",
+                                                                    (string)oReader["DeviceID"],
+                                                                    (bool)oReader["StatePrivacy"],
+                                                                    "",
+                                                                    (bool) oReader["InOrOut"],
+                                                                    (decimal)oReader["Lat"],
+                                                                    (decimal)oReader["Long"],
+                                                                    email));
+                        }
+
+                        myConnection.Close();
+                    }
+                }
+
+
+
+                /*
+
                 // Perform database query to retrive the most recent AMS DeviceStates for each AMS owned by User.
                 var deviceStates = from device in db.Devices
                                    where device.Email == email
@@ -509,6 +551,8 @@ namespace server_api.Controllers
                                                                     state.Long,
                                                                     email));
                 }
+                  
+                */
                 // TODO - Send user list of AMS DeviceState. 
                 // JsonConvert.SerializeObject(deviceStates) - does not work, circular reference
 
