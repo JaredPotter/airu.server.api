@@ -247,11 +247,31 @@ namespace server_api.Controllers
                 }
             }
 
-            pollutantDataList.Add(ozone);
-            pollutantDataList.Add(pm25);
-            pollutantDataList.Add(no2);
-            pollutantDataList.Add(temperature);
-            pollutantDataList.Add(co);
+            if (ozone.values.Count != 0)
+            {
+                pollutantDataList.Add(ozone);
+            }
+
+            if (pm25.values.Count != 0)
+            {
+                pollutantDataList.Add(pm25);
+            }
+
+            if (no2.values.Count != 0)
+            {
+                pollutantDataList.Add(no2);
+            }
+
+            if (temperature.values.Count != 0)
+            {
+                pollutantDataList.Add(temperature);
+            }
+
+            if (co.values.Count != 0)
+            {
+                pollutantDataList.Add(co);
+            }
+
 
             return Ok(pollutantDataList);
         }
