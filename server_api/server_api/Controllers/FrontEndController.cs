@@ -172,10 +172,9 @@ namespace server_api.Controllers
                         data.site.data[j].date = correctDateTime.ToString("MM/dd/yyyy HH:mm:ss");
                     }
 
-                    if (cacheDateTimeStamp.Year == 1) // Not set.
-                    {
-                        cacheDateTimeStamp = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                    }
+  
+                    cacheDateTimeStamp = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
 
                     dataArray[i] = data;  
                 }
@@ -183,6 +182,10 @@ namespace server_api.Controllers
 
             return Ok(dataArray);
         }
+
+        static Dictionary<string, List<SwaggerPollutantList>> swaggerDAQDataDictCache = new Dictionary<string, List<SwaggerPollutantList>>();
+        static Dictionary<string, string> apiUrlDict = new Dictionary<string, string>();
+        static Dictionary<string, DateTime> cacheDateTimeStampDict = new Dictionary<string, DateTime>();
 
         /// <summary>
         /// 
@@ -193,137 +196,177 @@ namespace server_api.Controllers
         [HttpPost]
         public IHttpActionResult GetDAQChartData([FromBody]string name)
         {
-            Dictionary<string, string> apiUrlDict = new Dictionary<string, string>();
-            apiUrlDict.Add("Box Elder County", "http://air.utah.gov/xmlFeed.php?id=boxelder");
-            apiUrlDict.Add("Cache County", "http://air.utah.gov/xmlFeed.php?id=cache");
-            apiUrlDict.Add("Price", "http://air.utah.gov/xmlFeed.php?id=p2");
-            apiUrlDict.Add("Davis County", "http://air.utah.gov/xmlFeed.php?id=bv");
-            apiUrlDict.Add("Duchesne County", "http://air.utah.gov/xmlFeed.php?id=rs");
-            apiUrlDict.Add("Salt Lake County", "http://air.utah.gov/xmlFeed.php?id=slc");
-            apiUrlDict.Add("Tooele County", "http://air.utah.gov/xmlFeed.php?id=tooele");
-            apiUrlDict.Add("Uintah County", "http://air.utah.gov/xmlFeed.php?id=v4");
-            apiUrlDict.Add("Utah County", "http://air.utah.gov/xmlFeed.php?id=utah");
-            apiUrlDict.Add("Washington County", "http://air.utah.gov/xmlFeed.php?id=washington");
-            apiUrlDict.Add("Weber County", "http://air.utah.gov/xmlFeed.php?id=weber");
-
-            string url = apiUrlDict[name];
-
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            Stream stream = response.GetResponseStream();
-            XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
-            StreamReader reader = new StreamReader(stream);
-            SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
-
-            List<SwaggerPollutantList> pollutantDataList = new List<SwaggerPollutantList>();
-
-            List<string> dates = new List<string>();
-            SwaggerPollutantList ozone = new SwaggerPollutantList("Ozone ppm");
-            SwaggerPollutantList pm25 = new SwaggerPollutantList("PM 2.5 ug/m^3");
-            SwaggerPollutantList no2 = new SwaggerPollutantList("NO2 ppm");
-            SwaggerPollutantList temperature = new SwaggerPollutantList("Temperature F");
-            SwaggerPollutantList co = new SwaggerPollutantList("CO ppm");
-
-            foreach(var dataSet in data.site.data)
+            if(swaggerDAQDataDictCache.Count == 0)
             {
-                DateTime wrongDateTime = DateTime.ParseExact(dataSet.date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                DateTime correctDateTime = wrongDateTime.AddHours(1);
+                swaggerDAQDataDictCache.Add("Box Elder County", null);
+                swaggerDAQDataDictCache.Add("Cache County", null);
+                swaggerDAQDataDictCache.Add("Price", null);
+                swaggerDAQDataDictCache.Add("Davis County", null);
+                swaggerDAQDataDictCache.Add("Duchesne County", null);
+                swaggerDAQDataDictCache.Add("Salt Lake County", null);
+                swaggerDAQDataDictCache.Add("Tooele County", null);
+                swaggerDAQDataDictCache.Add("Uintah County", null);
+                swaggerDAQDataDictCache.Add("Utah County", null);
+                swaggerDAQDataDictCache.Add("Washington County", null);
+                swaggerDAQDataDictCache.Add("Weber County", null);
 
-                long dateMilliseconds = ConvertDateTimeToMilliseconds(correctDateTime);
+                cacheDateTimeStampDict.Add("Box Elder County", new DateTime());
+                cacheDateTimeStampDict.Add("Cache County", new DateTime());
+                cacheDateTimeStampDict.Add("Price", new DateTime());
+                cacheDateTimeStampDict.Add("Davis County", new DateTime());
+                cacheDateTimeStampDict.Add("Duchesne County", new DateTime());
+                cacheDateTimeStampDict.Add("Salt Lake County", new DateTime());
+                cacheDateTimeStampDict.Add("Tooele County", new DateTime());
+                cacheDateTimeStampDict.Add("Uintah County", new DateTime());
+                cacheDateTimeStampDict.Add("Utah County", new DateTime());
+                cacheDateTimeStampDict.Add("Washington County", new DateTime());
+                cacheDateTimeStampDict.Add("Weber County", new DateTime());
 
-                if(dataSet.ozone != "")
-                {
-                    ozone.values.Add(new object[2]);
-                    ozone.values.Last()[0] = dateMilliseconds;
-                    ozone.values.Last()[1] = Decimal.Parse(dataSet.ozone);
-                }
-                else
-                {
-                    ozone.values.Add(new object[2]);
-                    ozone.values.Last()[0] = dateMilliseconds;
-                    ozone.values.Last()[1] = 0.0;
-                }
-
-                if (dataSet.pm25 != "")
-                {
-                    pm25.values.Add(new object[2]);
-                    pm25.values.Last()[0] = dateMilliseconds;
-                    pm25.values.Last()[1] = Decimal.Parse(dataSet.pm25);
-                }
-                else
-                {
-                    pm25.values.Add(new object[2]);
-                    pm25.values.Last()[0] = dateMilliseconds;
-                    pm25.values.Last()[1] = 0.0;
-                }
-
-                if (dataSet.no2 != "")
-                {
-                    no2.values.Add(new object[2]);
-                    no2.values.Last()[0] = dateMilliseconds;
-                    no2.values.Last()[1] = Decimal.Parse(dataSet.no2);
-                }
-                else
-                {
-                    no2.values.Add(new object[2]);
-                    no2.values.Last()[0] = dateMilliseconds;
-                    no2.values.Last()[1] = 0.0;
-                }
-
-                if (dataSet.temperature != "")
-                {
-                    temperature.values.Add(new object[2]);
-                    temperature.values.Last()[0] = dateMilliseconds;
-                    temperature.values.Last()[1] = Decimal.Parse(dataSet.temperature);
-                }
-                else
-                {
-                    temperature.values.Add(new object[2]);
-                    temperature.values.Last()[0] = dateMilliseconds;
-                    temperature.values.Last()[1] = 0.0;
-                }
-
-                if (dataSet.co != "")
-                {
-                    co.values.Add(new object[2]);
-                    co.values.Last()[0] = dateMilliseconds;
-                    co.values.Last()[1] = Decimal.Parse(dataSet.co);
-                }
-                else
-                {
-                    co.values.Add(new object[2]);
-                    co.values.Last()[0] = dateMilliseconds;
-                    co.values.Last()[1] = 0.0;
-                }
+                apiUrlDict.Add("Box Elder County", "http://air.utah.gov/xmlFeed.php?id=boxelder");
+                apiUrlDict.Add("Cache County", "http://air.utah.gov/xmlFeed.php?id=cache");
+                apiUrlDict.Add("Price", "http://air.utah.gov/xmlFeed.php?id=p2");
+                apiUrlDict.Add("Davis County", "http://air.utah.gov/xmlFeed.php?id=bv");
+                apiUrlDict.Add("Duchesne County", "http://air.utah.gov/xmlFeed.php?id=rs");
+                apiUrlDict.Add("Salt Lake County", "http://air.utah.gov/xmlFeed.php?id=slc");
+                apiUrlDict.Add("Tooele County", "http://air.utah.gov/xmlFeed.php?id=tooele");
+                apiUrlDict.Add("Uintah County", "http://air.utah.gov/xmlFeed.php?id=v4");
+                apiUrlDict.Add("Utah County", "http://air.utah.gov/xmlFeed.php?id=utah");
+                apiUrlDict.Add("Washington County", "http://air.utah.gov/xmlFeed.php?id=washington");
+                apiUrlDict.Add("Weber County", "http://air.utah.gov/xmlFeed.php?id=weber");
             }
 
-            if (ozone.values.Count != 0)
+            List<SwaggerPollutantList> currentData = swaggerDAQDataDictCache[name];
+            DateTime currentDate = cacheDateTimeStampDict[name];
+
+            int timeDiffMinutes = (DateTime.Now.TimeOfDay - currentDate.TimeOfDay).Minutes;
+
+            if (currentData == null || timeDiffMinutes > 95)
             {
-                pollutantDataList.Add(ozone);
+                string url = apiUrlDict[name];
+
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                Stream stream = response.GetResponseStream();
+                XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
+                StreamReader reader = new StreamReader(stream);
+                SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
+
+                List<SwaggerPollutantList> pollutantDataList = new List<SwaggerPollutantList>();
+
+                List<string> dates = new List<string>();
+                SwaggerPollutantList ozone = new SwaggerPollutantList("Ozone ppm");
+                SwaggerPollutantList pm25 = new SwaggerPollutantList("PM 2.5 ug/m^3");
+                SwaggerPollutantList no2 = new SwaggerPollutantList("NO2 ppm");
+                SwaggerPollutantList temperature = new SwaggerPollutantList("Temperature F");
+                SwaggerPollutantList co = new SwaggerPollutantList("CO ppm");
+
+                foreach (var dataSet in data.site.data)
+                {
+                    DateTime wrongDateTime = DateTime.ParseExact(dataSet.date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                    DateTime correctDateTime = wrongDateTime.AddHours(1);
+
+                    long dateMilliseconds = ConvertDateTimeToMilliseconds(correctDateTime);
+
+                    if (dataSet.ozone != "")
+                    {
+                        ozone.values.Add(new object[2]);
+                        ozone.values.Last()[0] = dateMilliseconds;
+                        ozone.values.Last()[1] = Decimal.Parse(dataSet.ozone);
+                    }
+                    else
+                    {
+                        ozone.values.Add(new object[2]);
+                        ozone.values.Last()[0] = dateMilliseconds;
+                        ozone.values.Last()[1] = 0.0;
+                    }
+
+                    if (dataSet.pm25 != "")
+                    {
+                        pm25.values.Add(new object[2]);
+                        pm25.values.Last()[0] = dateMilliseconds;
+                        pm25.values.Last()[1] = Decimal.Parse(dataSet.pm25);
+                    }
+                    else
+                    {
+                        pm25.values.Add(new object[2]);
+                        pm25.values.Last()[0] = dateMilliseconds;
+                        pm25.values.Last()[1] = 0.0;
+                    }
+
+                    if (dataSet.no2 != "")
+                    {
+                        no2.values.Add(new object[2]);
+                        no2.values.Last()[0] = dateMilliseconds;
+                        no2.values.Last()[1] = Decimal.Parse(dataSet.no2);
+                    }
+                    else
+                    {
+                        no2.values.Add(new object[2]);
+                        no2.values.Last()[0] = dateMilliseconds;
+                        no2.values.Last()[1] = 0.0;
+                    }
+
+                    if (dataSet.temperature != "")
+                    {
+                        temperature.values.Add(new object[2]);
+                        temperature.values.Last()[0] = dateMilliseconds;
+                        temperature.values.Last()[1] = Decimal.Parse(dataSet.temperature);
+                    }
+                    else
+                    {
+                        temperature.values.Add(new object[2]);
+                        temperature.values.Last()[0] = dateMilliseconds;
+                        temperature.values.Last()[1] = 0.0;
+                    }
+
+                    if (dataSet.co != "")
+                    {
+                        co.values.Add(new object[2]);
+                        co.values.Last()[0] = dateMilliseconds;
+                        co.values.Last()[1] = Decimal.Parse(dataSet.co);
+                    }
+                    else
+                    {
+                        co.values.Add(new object[2]);
+                        co.values.Last()[0] = dateMilliseconds;
+                        co.values.Last()[1] = 0.0;
+                    }
+                }
+
+                if (ozone.values.Count != 0)
+                {
+                    pollutantDataList.Add(ozone);
+                }
+
+                if (pm25.values.Count != 0)
+                {
+                    pollutantDataList.Add(pm25);
+                }
+
+                if (no2.values.Count != 0)
+                {
+                    pollutantDataList.Add(no2);
+                }
+
+                if (temperature.values.Count != 0)
+                {
+                    pollutantDataList.Add(temperature);
+                }
+
+                if (co.values.Count != 0)
+                {
+                    pollutantDataList.Add(co);
+                }
+
+                if (cacheDateTimeStamp.Year == 1) // Not set.
+                {
+                    cacheDateTimeStampDict[name] = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                }
+
+                swaggerDAQDataDictCache[name] = pollutantDataList;
             }
 
-            if (pm25.values.Count != 0)
-            {
-                pollutantDataList.Add(pm25);
-            }
-
-            if (no2.values.Count != 0)
-            {
-                pollutantDataList.Add(no2);
-            }
-
-            if (temperature.values.Count != 0)
-            {
-                pollutantDataList.Add(temperature);
-            }
-
-            if (co.values.Count != 0)
-            {
-                pollutantDataList.Add(co);
-            }
-
-
-            return Ok(pollutantDataList);
+            return Ok(swaggerDAQDataDictCache[name]);
         }
 
         /// <summary>
