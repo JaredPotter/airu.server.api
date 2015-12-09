@@ -110,6 +110,9 @@ namespace server_api.Controllers
             return Ok(json[0]);
         }
 
+        static SwaggerDAQData[] dataArray = new SwaggerDAQData[11];
+        static DateTime cacheDateTimeStamp = new DateTime();
+
         /// <summary>
         /// 
         /// </summary>
@@ -146,21 +149,36 @@ namespace server_api.Controllers
               new Tuple<double, double>(37.096288, -113.568486),
               new Tuple<double, double>(41.222803, -111.973789) };
 
-            SwaggerDAQData[] dataArray = new SwaggerDAQData[11];
+            int timeDiffMinutes = (DateTime.Now.TimeOfDay - cacheDateTimeStamp.TimeOfDay).Minutes;
 
-            for (int i = 0; i < apiUrls.Length; i++)
+            if (dataArray[0] == null || timeDiffMinutes > 95)
             {
-                HttpWebRequest request = WebRequest.Create(apiUrls[i]) as HttpWebRequest;
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                Stream stream = response.GetResponseStream();
-                XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
-                StreamReader reader = new StreamReader(stream);
-                SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
+                for (int i = 0; i < apiUrls.Length; i++)
+                {
+                    HttpWebRequest request = WebRequest.Create(apiUrls[i]) as HttpWebRequest;
+                    HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                    Stream stream = response.GetResponseStream();
+                    XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
+                    StreamReader reader = new StreamReader(stream);
+                    SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
 
-                data.site.latitude = gpsLocations[i].Item1;
-                data.site.longitude = gpsLocations[i].Item2;
+                    data.site.latitude = gpsLocations[i].Item1;
+                    data.site.longitude = gpsLocations[i].Item2;
 
-                dataArray[i] = data;
+                    for (int j = 0; j < data.site.data.Length; j++)
+                    {
+                        DateTime wrongDateTime = DateTime.ParseExact(data.site.data[j].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                        DateTime correctDateTime = wrongDateTime.AddHours(1);
+                        string s = data.site.data[j].date = correctDateTime.ToString("MM/dd/yyyy HH:mm:ss");
+                    }
+
+                    if (cacheDateTimeStamp.Year == 1) // Not set.
+                    {
+                        cacheDateTimeStamp = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                    }
+
+                    dataArray[i] = data;  
+                }
             }
 
             return Ok(dataArray);
