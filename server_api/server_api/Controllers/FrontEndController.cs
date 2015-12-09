@@ -169,7 +169,7 @@ namespace server_api.Controllers
                     {
                         DateTime wrongDateTime = DateTime.ParseExact(data.site.data[j].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
                         DateTime correctDateTime = wrongDateTime.AddHours(1);
-                        string s = data.site.data[j].date = correctDateTime.ToString("MM/dd/yyyy HH:mm:ss");
+                        data.site.data[j].date = correctDateTime.ToString("MM/dd/yyyy HH:mm:ss");
                     }
 
                     if (cacheDateTimeStamp.Year == 1) // Not set.
@@ -226,14 +226,22 @@ namespace server_api.Controllers
 
             foreach(var dataSet in data.site.data)
             {
-                DateTime date = DateTime.ParseExact(dataSet.date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                long dateMilliseconds = ConvertDateTimeToMilliseconds(date);
+                DateTime wrongDateTime = DateTime.ParseExact(dataSet.date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                DateTime correctDateTime = wrongDateTime.AddHours(1);
+
+                long dateMilliseconds = ConvertDateTimeToMilliseconds(correctDateTime);
 
                 if(dataSet.ozone != "")
                 {
                     ozone.values.Add(new object[2]);
                     ozone.values.Last()[0] = dateMilliseconds;
                     ozone.values.Last()[1] = Decimal.Parse(dataSet.ozone);
+                }
+                else
+                {
+                    ozone.values.Add(new object[2]);
+                    ozone.values.Last()[0] = dateMilliseconds;
+                    ozone.values.Last()[1] = 0.0;
                 }
 
                 if (dataSet.pm25 != "")
@@ -242,12 +250,24 @@ namespace server_api.Controllers
                     pm25.values.Last()[0] = dateMilliseconds;
                     pm25.values.Last()[1] = Decimal.Parse(dataSet.pm25);
                 }
+                else
+                {
+                    pm25.values.Add(new object[2]);
+                    pm25.values.Last()[0] = dateMilliseconds;
+                    pm25.values.Last()[1] = 0.0;
+                }
 
                 if (dataSet.no2 != "")
                 {
                     no2.values.Add(new object[2]);
                     no2.values.Last()[0] = dateMilliseconds;
                     no2.values.Last()[1] = Decimal.Parse(dataSet.no2);
+                }
+                else
+                {
+                    no2.values.Add(new object[2]);
+                    no2.values.Last()[0] = dateMilliseconds;
+                    no2.values.Last()[1] = 0.0;
                 }
 
                 if (dataSet.temperature != "")
@@ -256,12 +276,24 @@ namespace server_api.Controllers
                     temperature.values.Last()[0] = dateMilliseconds;
                     temperature.values.Last()[1] = Decimal.Parse(dataSet.temperature);
                 }
+                else
+                {
+                    temperature.values.Add(new object[2]);
+                    temperature.values.Last()[0] = dateMilliseconds;
+                    temperature.values.Last()[1] = 0.0;
+                }
 
                 if (dataSet.co != "")
                 {
                     co.values.Add(new object[2]);
                     co.values.Last()[0] = dateMilliseconds;
                     co.values.Last()[1] = Decimal.Parse(dataSet.co);
+                }
+                else
+                {
+                    co.values.Add(new object[2]);
+                    co.values.Last()[0] = dateMilliseconds;
+                    co.values.Last()[1] = 0.0;
                 }
             }
 
