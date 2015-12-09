@@ -142,57 +142,57 @@ namespace server_api.Models
         /// <summary>
         /// 
         /// </summary>
-        public string name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [StringLength(17)]
-        public string id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool privacy { get; set; }
+        public bool Privacy { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public string purpose { get; set; }
+        public string Purpose { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool indoor { get; set; }
+        public bool Indoor { get; set; }
 
-        public Location location;
+        public Location Location {get; set;}
 
-        public string owner { get; set; }
+        public string Owner { get; set; }
 
         public SwaggerDeviceState(string name, string id, bool privacy, string purpose, bool indoor, decimal lat, decimal lng, string owner)
         {
-            this.name = name;
-            this.id = id;
-            this.privacy = privacy;
-            this.purpose = purpose;
-            this.indoor = indoor;
-            this.owner = owner;
-            this.location = new Location(lat, lng);
+            this.Name = name;
+            this.Id = id;
+            this.Privacy = privacy;
+            this.Purpose = purpose;
+            this.Indoor = indoor;
+            this.Owner = owner;
+            this.Location = new Location(lat, lng);
         }
 
-        public class Location
-        {
-            public decimal lat { get; set; }
-            public decimal lng { get; set; }
-
-            public Location(decimal lat, decimal lng)
-            {
-                this.lat = lat;
-                this.lng = lng;
-            }
-        }
     }
 
+    public class Location
+    {
+        public decimal Lat { get; set; }
+        public decimal Lng { get; set; }
+
+        public Location(decimal lat, decimal lng)
+        {
+            this.Lat = lat;
+            this.Lng = lng;
+        }
+    }
     
 
     /// <summary>

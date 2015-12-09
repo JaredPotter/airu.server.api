@@ -436,24 +436,24 @@ namespace server_api.Controllers
         {
             var db = new AirUDBCOE();
 
-            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceState.id);
+            Device existingDevice = db.Devices.SingleOrDefault(x => x.DeviceID == newDeviceState.Id);
             if (existingDevice == null)
             {
                 // Add device success.
                 Device device = new Device();
-                device.Name = newDeviceState.name;
-                device.DeviceID = newDeviceState.id;
+                device.Name = newDeviceState.Name;
+                device.DeviceID = newDeviceState.Id;
                 device.Email = "jaredpotter1@gmail.com"; // newDeviceAndState.Email;
-                device.DevicePrivacy = newDeviceState.privacy;
-                device.Purpose = newDeviceState.purpose;
+                device.DevicePrivacy = newDeviceState.Privacy;
+                device.Purpose = newDeviceState.Purpose;
                 db.Devices.Add(device);
                 db.SaveChanges();
 
                 DeviceState state = new DeviceState();
                 state.Device = device;
-                state.DeviceID = newDeviceState.id;
-                state.InOrOut = newDeviceState.indoor;
-                state.StatePrivacy = newDeviceState.privacy;
+                state.DeviceID = newDeviceState.Id;
+                state.InOrOut = newDeviceState.Indoor;
+                state.StatePrivacy = newDeviceState.Privacy;
                 state.StateTime = new DateTime(1900, 1, 1);
                 state.Long = 0.0m;
                 state.Lat = 90.0m;
@@ -547,14 +547,14 @@ namespace server_api.Controllers
             var db = new AirUDBCOE();
             
             // Validate Device from given DeviceId exists.
-            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == state.id);
+            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == state.Id);
 
             if (registeredDevice != null)
             {
                 // Request previous state from database based on state.DeviceID
                 DeviceState previousState = (
                                     from device in db.DeviceStates
-                                    where device.DeviceID == state.id
+                                    where device.DeviceID == state.Id
                                     && device.StateTime <= DateTime.Now // **May be a future source of contention - REVIEW**
                                     group device by device.DeviceID into deviceIDGroup
                                     select new
@@ -570,17 +570,17 @@ namespace server_api.Controllers
 
                 DeviceState newDeviceState = new DeviceState();
                 newDeviceState.Device = previousState.Device;
-                newDeviceState.DeviceID = state.id;
-                newDeviceState.InOrOut = state.indoor;
-                newDeviceState.StatePrivacy = state.privacy;
+                newDeviceState.DeviceID = state.Id;
+                newDeviceState.InOrOut = state.Indoor;
+                newDeviceState.StatePrivacy = state.Privacy;
                 newDeviceState.Lat = previousState.Lat;
                 newDeviceState.Long = previousState.Long;
                 newDeviceState.StateTime = DateTime.Now;
                 db.DeviceStates.Add(newDeviceState);
                 db.SaveChanges();
 
-                registeredDevice.Name = state.name;
-                registeredDevice.Purpose = state.purpose;
+                registeredDevice.Name = state.Name;
+                registeredDevice.Purpose = state.Purpose;
 
                 //db.Devices.Add(registeredDevice);
                 db.SaveChanges();
