@@ -110,6 +110,9 @@ namespace server_api.Controllers
             return Ok(json[0]);
         }
 
+        static SwaggerDAQData[] dataArray = new SwaggerDAQData[11];
+        static DateTime cacheDateTimeStamp = new DateTime();
+
         /// <summary>
         /// 
         /// </summary>
@@ -146,21 +149,36 @@ namespace server_api.Controllers
               new Tuple<double, double>(37.096288, -113.568486),
               new Tuple<double, double>(41.222803, -111.973789) };
 
-            SwaggerDAQData[] dataArray = new SwaggerDAQData[11];
+            int timeDiffMinutes = (DateTime.Now.TimeOfDay - cacheDateTimeStamp.TimeOfDay).Minutes;
 
-            for (int i = 0; i < apiUrls.Length; i++)
+            if (dataArray[0] == null || timeDiffMinutes > 95)
             {
-                HttpWebRequest request = WebRequest.Create(apiUrls[i]) as HttpWebRequest;
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                Stream stream = response.GetResponseStream();
-                XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
-                StreamReader reader = new StreamReader(stream);
-                SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
+                for (int i = 0; i < apiUrls.Length; i++)
+                {
+                    HttpWebRequest request = WebRequest.Create(apiUrls[i]) as HttpWebRequest;
+                    HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                    Stream stream = response.GetResponseStream();
+                    XmlSerializer serializer = new XmlSerializer(typeof(SwaggerDAQData));
+                    StreamReader reader = new StreamReader(stream);
+                    SwaggerDAQData data = (SwaggerDAQData)serializer.Deserialize(reader);
 
-                data.site.latitude = gpsLocations[i].Item1;
-                data.site.longitude = gpsLocations[i].Item2;
+                    data.site.latitude = gpsLocations[i].Item1;
+                    data.site.longitude = gpsLocations[i].Item2;
 
-                dataArray[i] = data;
+                    for (int j = 0; j < data.site.data.Length; j++)
+                    {
+                        DateTime wrongDateTime = DateTime.ParseExact(data.site.data[j].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                        DateTime correctDateTime = wrongDateTime.AddHours(1);
+                        data.site.data[j].date = correctDateTime.ToString("MM/dd/yyyy HH:mm:ss");
+                    }
+
+                    if (cacheDateTimeStamp.Year == 1) // Not set.
+                    {
+                        cacheDateTimeStamp = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                    }
+
+                    dataArray[i] = data;  
+                }
             }
 
             return Ok(dataArray);
@@ -208,14 +226,22 @@ namespace server_api.Controllers
 
             foreach(var dataSet in data.site.data)
             {
-                DateTime date = DateTime.ParseExact(dataSet.date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                long dateMilliseconds = ConvertDateTimeToMilliseconds(date);
+                DateTime wrongDateTime = DateTime.ParseExact(dataSet.date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                DateTime correctDateTime = wrongDateTime.AddHours(1);
+
+                long dateMilliseconds = ConvertDateTimeToMilliseconds(correctDateTime);
 
                 if(dataSet.ozone != "")
                 {
                     ozone.values.Add(new object[2]);
                     ozone.values.Last()[0] = dateMilliseconds;
                     ozone.values.Last()[1] = Decimal.Parse(dataSet.ozone);
+                }
+                else
+                {
+                    ozone.values.Add(new object[2]);
+                    ozone.values.Last()[0] = dateMilliseconds;
+                    ozone.values.Last()[1] = 0.0;
                 }
 
                 if (dataSet.pm25 != "")
@@ -224,12 +250,24 @@ namespace server_api.Controllers
                     pm25.values.Last()[0] = dateMilliseconds;
                     pm25.values.Last()[1] = Decimal.Parse(dataSet.pm25);
                 }
+                else
+                {
+                    pm25.values.Add(new object[2]);
+                    pm25.values.Last()[0] = dateMilliseconds;
+                    pm25.values.Last()[1] = 0.0;
+                }
 
                 if (dataSet.no2 != "")
                 {
                     no2.values.Add(new object[2]);
                     no2.values.Last()[0] = dateMilliseconds;
                     no2.values.Last()[1] = Decimal.Parse(dataSet.no2);
+                }
+                else
+                {
+                    no2.values.Add(new object[2]);
+                    no2.values.Last()[0] = dateMilliseconds;
+                    no2.values.Last()[1] = 0.0;
                 }
 
                 if (dataSet.temperature != "")
@@ -238,6 +276,12 @@ namespace server_api.Controllers
                     temperature.values.Last()[0] = dateMilliseconds;
                     temperature.values.Last()[1] = Decimal.Parse(dataSet.temperature);
                 }
+                else
+                {
+                    temperature.values.Add(new object[2]);
+                    temperature.values.Last()[0] = dateMilliseconds;
+                    temperature.values.Last()[1] = 0.0;
+                }
 
                 if (dataSet.co != "")
                 {
@@ -245,13 +289,39 @@ namespace server_api.Controllers
                     co.values.Last()[0] = dateMilliseconds;
                     co.values.Last()[1] = Decimal.Parse(dataSet.co);
                 }
+                else
+                {
+                    co.values.Add(new object[2]);
+                    co.values.Last()[0] = dateMilliseconds;
+                    co.values.Last()[1] = 0.0;
+                }
             }
 
-            pollutantDataList.Add(ozone);
-            pollutantDataList.Add(pm25);
-            pollutantDataList.Add(no2);
-            pollutantDataList.Add(temperature);
-            pollutantDataList.Add(co);
+            if (ozone.values.Count != 0)
+            {
+                pollutantDataList.Add(ozone);
+            }
+
+            if (pm25.values.Count != 0)
+            {
+                pollutantDataList.Add(pm25);
+            }
+
+            if (no2.values.Count != 0)
+            {
+                pollutantDataList.Add(no2);
+            }
+
+            if (temperature.values.Count != 0)
+            {
+                pollutantDataList.Add(temperature);
+            }
+
+            if (co.values.Count != 0)
+            {
+                pollutantDataList.Add(co);
+            }
+
 
             return Ok(pollutantDataList);
         }
