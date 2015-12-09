@@ -151,7 +151,7 @@ namespace server_api.Controllers
 
             int timeDiffMinutes = (DateTime.Now.TimeOfDay - cacheDateTimeStamp.TimeOfDay).Minutes;
 
-            if (dataArray[0] == null || timeDiffMinutes > 95)
+            if (dataArray[0] == null || timeDiffMinutes > 35)
             {
                 for (int i = 0; i < apiUrls.Length; i++)
                 {
@@ -240,7 +240,7 @@ namespace server_api.Controllers
 
             int timeDiffMinutes = (DateTime.Now.TimeOfDay - currentDate.TimeOfDay).Minutes;
 
-            if (currentData == null || timeDiffMinutes > 95)
+            if (currentData == null || timeDiffMinutes > 35)
             {
                 string url = apiUrlDict[name];
 
@@ -358,11 +358,7 @@ namespace server_api.Controllers
                     pollutantDataList.Add(co);
                 }
 
-                if (cacheDateTimeStamp.Year == 1) // Not set.
-                {
-                    cacheDateTimeStampDict[name] = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                }
-
+                cacheDateTimeStampDict[name] = DateTime.ParseExact(data.site.data[0].date, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
                 swaggerDAQDataDictCache[name] = pollutantDataList;
             }
 
@@ -937,6 +933,10 @@ namespace server_api.Controllers
 
                                 case "Temperature":
                                     latest.temp = item.value.ToString();
+                                    break;
+
+                                case "O3":
+                                    latest.o3 = item.value.ToString();
                                     break;
                             }
                         }
