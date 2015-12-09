@@ -965,18 +965,38 @@ namespace server_api.Controllers
 
         }
         */
-        /*
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="id"></param>
-        [Route("ams")]
-        [HttpDelete]
-        public void Delete(int id)
-        {
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        [Route("frontend/devices/{id}")]
+        [HttpDelete]
+        public IHttpActionResult Delete(string id)
+        {
+            AirUDBCOE db = new AirUDBCOE();
+
+            // Validate Device from given DeviceId exists.
+            Device registeredDevice = db.Devices.SingleOrDefault(x => x.DeviceID == id);
+
+            if (registeredDevice != null)
+            {
+                Device toDelete = (from dev in db.Devices
+                                   where dev.DeviceID == id
+                                   select dev).Single();
+
+                db.Devices.Remove(toDelete);
+                db.SaveChanges();
+
+                return Ok("Delete Successful");
+            }
+            else
+            {
+                // Device with DeviceID: <deviceID> does not exist.
+                return NotFound();
+            }
         }
-        */
+
 
         /// <summary>
         /// Converts DateTime to compatible JS time in Milliseconds
