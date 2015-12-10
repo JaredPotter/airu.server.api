@@ -75,6 +75,8 @@ namespace server_api.Controllers
             return Ok("Success");
         }
 
+        static SwaggerAQIData cacheAQI = null;
+
         /// <summary>
         /// Response Example:
         /// {
@@ -101,13 +103,23 @@ namespace server_api.Controllers
         {
             HttpWebRequest request = WebRequest.Create("http://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=84102&distance=25&API_KEY=1CD19983-D26A-46F2-8022-6A6E16A991F7") as HttpWebRequest;
             HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            Stream stream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(stream);
-            string jsonString = reader.ReadToEnd();
 
-            var json = JsonConvert.DeserializeObject<SwaggerAQIData[]>(jsonString);
+            if (response.StatusCode == HttpStatusCode.OK || cacheAQI != null)
+            {
+                Stream stream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(stream);
+                string jsonString = reader.ReadToEnd();
 
-            return Ok(json[0]);
+                var json = JsonConvert.DeserializeObject<SwaggerAQIData[]>(jsonString);
+
+                cacheAQI = json[0];
+                
+                return Ok(cacheAQI);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         static SwaggerDAQData[] dataArray = new SwaggerDAQData[11];
