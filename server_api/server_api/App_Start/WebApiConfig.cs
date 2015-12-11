@@ -18,7 +18,7 @@ namespace server_api
             //Disable XML
             config.Formatters.Remove(config.Formatters.XmlFormatter);
             //Set JSON Serializer to  Indent and use CamelCase to match js native formats
-            var jsonFormatter = GlobalConfiguration.Configuration.Formatters.JsonFormatter;
+            var jsonFormatter = config.Formatters.JsonFormatter;
             var settings = jsonFormatter.SerializerSettings;
             settings.Formatting = Formatting.Indented;
             settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
