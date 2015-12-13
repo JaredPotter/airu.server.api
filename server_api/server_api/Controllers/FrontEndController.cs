@@ -104,7 +104,7 @@ namespace server_api.Controllers
             HttpWebRequest request = WebRequest.Create("http://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=84102&distance=25&API_KEY=1CD19983-D26A-46F2-8022-6A6E16A991F7") as HttpWebRequest;
             HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 
-            if (response.StatusCode == HttpStatusCode.OK || cacheAQI != null)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
                 Stream stream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(stream);
@@ -114,6 +114,10 @@ namespace server_api.Controllers
 
                 cacheAQI = json[0];
                 
+                return Ok(cacheAQI);
+            }
+            else if (cacheAQI != null)
+            {
                 return Ok(cacheAQI);
             }
             else
