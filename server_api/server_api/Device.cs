@@ -8,6 +8,7 @@ namespace server_api
 
     public partial class Device
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Device()
         {
             DataPoints = new HashSet<DataPoint>();
@@ -22,14 +23,25 @@ namespace server_api
         [StringLength(320)]
         public string Email { get; set; }
 
+        [Required]
+        [StringLength(320)]
+        public string Name { get; set; }
+
+        [Required]
+        [StringLength(1000)]
+        public string Purpose { get; set; }
+
         public bool DevicePrivacy { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DataPoint> DataPoints { get; set; }
 
         public virtual User User { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DeviceState> DeviceStates { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DeviceGroup> DeviceGroups { get; set; }
     }
 }

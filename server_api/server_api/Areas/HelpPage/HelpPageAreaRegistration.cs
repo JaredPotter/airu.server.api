@@ -3,8 +3,14 @@ using System.Web.Mvc;
 
 namespace server_api.Areas.HelpPage
 {
+    /// <summary>
+    /// *xml comment*
+    /// </summary>
     public class HelpPageAreaRegistration : AreaRegistration
     {
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
         public override string AreaName
         {
             get
@@ -13,6 +19,10 @@ namespace server_api.Areas.HelpPage
             }
         }
 
+        /// <summary>
+        /// *xml comment*
+        /// </summary>
+        /// <param name="context"></param>
         public override void RegisterArea(AreaRegistrationContext context)
         {
             context.MapRoute(

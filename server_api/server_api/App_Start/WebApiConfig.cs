@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using System.Net.Http;
+using System.Web.Http.Cors;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace server_api
 {
@@ -10,6 +13,16 @@ namespace server_api
     {
         public static void Register(HttpConfiguration config)
         {
+            var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(cors);
+            //Disable XML
+            config.Formatters.Remove(config.Formatters.XmlFormatter);
+            //Set JSON Serializer to  Indent and use CamelCase to match js native formats
+            var jsonFormatter = config.Formatters.JsonFormatter;
+            var settings = jsonFormatter.SerializerSettings;
+            settings.Formatting = Formatting.Indented;
+            settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+
             config.MapHttpAttributeRoutes();
 
             // Uncomment the following line of code to enable query support for actions with an IQueryable or IQueryable<T> return type.

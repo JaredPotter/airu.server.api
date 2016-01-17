@@ -31,6 +31,11 @@ namespace server_api.Areas.HelpPage
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly",
             MessageId = "bsonspec",
             Justification = "Part of a URI.")]
+
+        /// <summary>
+        ///  *xml comment*
+        /// </summary>
+        /// <param name="Register">*xml comment*</param>
         public static void Register(HttpConfiguration config)
         {
             //// Uncomment the following to use the documentation from XML documentation file.

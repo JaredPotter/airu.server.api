@@ -8,6 +8,7 @@ namespace server_api
 
     public partial class Pollutant
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Pollutant()
         {
             DataPoints = new HashSet<DataPoint>();
@@ -17,6 +18,7 @@ namespace server_api
         [StringLength(30)]
         public string PollutantName { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DataPoint> DataPoints { get; set; }
     }
 }

@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\server_api.XML</DocumentationFile>
+    <ExcludeGeneratedDebugSymbol>false</ExcludeGeneratedDebugSymbol>
+    <IncludeIisSettings>false</IncludeIisSettings>
+    <PublishDatabases>false</PublishDatabases>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -129,6 +132,10 @@
       <HintPath>..\packages\System.Spatial.5.7.0\lib\net40\System.Spatial.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.3\lib\net45\System.Web.Cors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -140,6 +147,10 @@
     </Reference>
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.3\lib\net45\System.Web.Http.Cors.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.Http.OData, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -214,26 +225,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AirUDatabaseCOE.cs" />
-    <Compile Include="AirU_database.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AirU_database.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="AirU_database.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
-    <Compile Include="AirU_database.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AirU_database.edmx</DependentUpon>
-    </Compile>
+    <Compile Include="AirUDBCOE.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="DataPoint.cs" />
+    <Compile Include="Device.cs" />
+    <Compile Include="DeviceGroup.cs" />
+    <Compile Include="DeviceState.cs" />
     <Compile Include="Devices_States_and_Datapoints.cs" />
+    <Compile Include="Migrations\201512072201225_Initial.cs" />
+    <Compile Include="Migrations\201512072201225_Initial.Designer.cs">
+      <DependentUpon>201512072201225_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\SwaggerModels.cs" />
+    <Compile Include="Pollutant.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
@@ -268,30 +276,13 @@
     <Compile Include="Controllers\AMSController.cs" />
     <Compile Include="Controllers\DatabaseContext.cs" />
     <Compile Include="Controllers\FrontEndController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\JsonContent.cs" />
-    <Compile Include="DataPoint.cs">
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Device.cs">
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DeviceGroup.cs">
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DeviceState.cs">
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Pollutant.cs">
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="User.cs">
-      <DependentUpon>AirU_database.tt</DependentUpon>
-    </Compile>
+    <Compile Include="SwaggerExtensions\ExamplesOperationFilter.cs" />
+    <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
@@ -331,23 +322,6 @@
     <Content Include="Content\themes\base\tooltip.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <EntityDeploy Include="AirU_database.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>AirU_database.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <Content Include="AirU_database.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>AirU_database.edmx</DependentUpon>
-      <LastGenOutput>AirU_database.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="AirU_database.edmx.diagram">
-      <DependentUpon>AirU_database.edmx</DependentUpon>
-    </Content>
-    <Content Include="AirU_database.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>AirU_database.edmx</DependentUpon>
-      <LastGenOutput>AirU_database.cs</LastGenOutput>
-    </Content>
     <Content Include="Areas\HelpPage\Views\Web.config" />
     <Content Include="Areas\HelpPage\Views\Shared\_Layout.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\ResourceModel.cshtml" />
@@ -417,13 +391,17 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201512072201225_Initial.resx">
+      <DependentUpon>201512072201225_Initial.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

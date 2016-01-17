@@ -5,6 +5,9 @@ using System.Web.Http.Description;
 
 namespace server_api.Areas.HelpPage
 {
+    /// <summary>
+    /// *xml comment*
+    /// </summary>
     public static class ApiDescriptionExtensions
     {
         /// <summary>
